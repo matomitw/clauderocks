@@ -31,8 +31,8 @@ variable "owner" {
 
 variable "bedrock_model_ids" {
   type        = list(string)
-  description = "List of Bedrock model identifiers to enable"
-  default     = ["anthropic.claude-opus-4-7"]
+  description = "List of Bedrock inference profile IDs to enable (e.g., us.anthropic.claude-sonnet-4-20250514-v1:0)"
+  default     = ["us.anthropic.claude-opus-4-7"]
   validation {
     condition     = length(var.bedrock_model_ids) > 0
     error_message = "At least one Bedrock model ID must be specified."

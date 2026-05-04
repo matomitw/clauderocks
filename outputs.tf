@@ -60,9 +60,9 @@ output "secret_arn" {
 # Bedrock Module Outputs
 # -----------------------------------------------------------------------------
 
-output "enabled_model_arns" {
-  description = "ARNs of enabled Bedrock models"
-  value       = module.bedrock.enabled_model_arns
+output "enabled_model_ids" {
+  description = "Inference profile IDs of enabled Bedrock models"
+  value       = module.bedrock.enabled_model_ids
 }
 
 # -----------------------------------------------------------------------------

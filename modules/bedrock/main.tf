@@ -6,12 +6,6 @@
 
 locals {
   name_prefix = "clauderocks-${var.environment}"
-
-  # Construct model ARNs from model IDs using the predictable Bedrock ARN pattern
-  model_arns = {
-    for model_id in var.model_ids :
-    model_id => "arn:aws:bedrock:${var.region}::foundation-model/${model_id}"
-  }
 }
 
 # --- Data Sources ---
@@ -89,28 +83,4 @@ resource "aws_bedrock_model_invocation_logging_configuration" "this" {
   depends_on = [
     aws_iam_role_policy.bedrock_logging
   ]
-}
-
-# --- Model Access Requests via AWS CLI ---
-# As of AWS provider v5.x, Bedrock model access is managed through the AWS
-# console or CLI. This null_resource uses local-exec provisioners to request
-# model access for each specified model ID.
-
-resource "null_resource" "model_access" {
-  for_each = toset(var.model_ids)
-
-  triggers = {
-    model_id = each.value
-    region   = var.region
-  }
-
-  provisioner "local-exec" {
-    command = <<-EOT
-      aws bedrock put-foundation-model-entitlement \
-        --model-id "${each.value}" \
-        --region "${var.region}" \
-        2>/dev/null || \
-      echo "Model access request for ${each.value} submitted or already granted."
-    EOT
-  }
 }
