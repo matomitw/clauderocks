@@ -1,0 +1,14 @@
+*.terraform/
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfplan
+.terraform.lock.hcl
+*.terraform.lock.hcl
+
+
+# bmad
+.claude/skills/bmad-*
+.agent*
+.kiro
+_bmad*
