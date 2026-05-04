@@ -1,14 +1,15 @@
-# clauderooks
+# clauderocks
 
 Terraform infrastructure-as-code project that provisions all AWS resources required to run [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) backed by [Amazon Bedrock](https://aws.amazon.com/bedrock/).
 
-clauderooks creates a complete, production-ready setup: IAM users and roles with least-privilege access, Secrets Manager for credential storage, optional VPC endpoints for private Bedrock connectivity, CloudWatch monitoring, CloudTrail audit logging, budget alerts, and remote state management — all organized into composable Terraform modules with multi-environment support (dev, staging, prod).
+clauderocks creates a complete, production-ready setup: IAM users and roles with least-privilege access, Secrets Manager for credential storage, optional VPC endpoints for private Bedrock connectivity, CloudWatch monitoring, CloudTrail audit logging, budget alerts, and remote state management — all organized into composable Terraform modules with multi-environment support (dev, staging, prod).
 
 ## Table of Contents
 
 - [Prerequisites](#prerequisites)
 - [Installing Claude Code CLI](#installing-claude-code-cli)
 - [Deploying Infrastructure](#deploying-infrastructure)
+- [Activating Bedrock Model Access](#activating-bedrock-model-access)
 - [Configuring Claude Code with Bedrock](#configuring-claude-code-with-bedrock)
 - [Retrieving IAM Credentials from Secrets Manager](#retrieving-iam-credentials-from-secrets-manager)
 - [Assuming the IAM Role](#assuming-the-iam-role)
@@ -16,6 +17,7 @@ clauderooks creates a complete, production-ready setup: IAM users and roles with
 - [Quick Start](#quick-start)
 - [Project Structure](#project-structure)
 - [Environments](#environments)
+- [Tearing Down Infrastructure](#tearing-down-infrastructure)
 - [Troubleshooting](#troubleshooting)
 
 ## Prerequisites
@@ -32,7 +34,6 @@ Before getting started, ensure you have the following installed and configured:
 You also need:
 
 - An **AWS account** with permissions to create IAM users, roles, policies, S3 buckets, DynamoDB tables, Secrets Manager secrets, CloudWatch resources, CloudTrail trails, and Budgets.
-- **Amazon Bedrock model access** enabled in your target region (default: `us-east-1`). You must request access to the Anthropic Claude models you plan to use through the [AWS Bedrock console](https://console.aws.amazon.com/bedrock/).
 - AWS CLI **configured** with credentials that have sufficient permissions to deploy the infrastructure:
 
 ```bash
@@ -60,7 +61,7 @@ claude --version
 1. **Clone the repository** and navigate to the project directory:
 
 ```bash
-cd clauderooks
+cd clauderocks
 ```
 
 2. **Initialize Terraform** (use `-backend=false` for first-time setup before the state backend exists):
@@ -85,7 +86,31 @@ terraform plan -var-file=envs/prod.tfvars
 terraform apply -var-file=envs/prod.tfvars
 ```
 
-After the initial apply creates the state backend resources, configure the S3 backend in `backend.tf` and re-initialize with `terraform init` to migrate state to remote storage.
+After the initial apply creates the state backend resources, configure the S3 backend in `backend.tf` (replace `{environment}` with your target environment, e.g., `dev`) and re-initialize with `terraform init -migrate-state` to migrate state to remote storage.
+
+## Activating Bedrock Model Access
+
+Anthropic Claude models on Bedrock require an AWS Marketplace subscription. This is a **one-time step per AWS account** — it costs nothing and persists even if you destroy and recreate the infrastructure.
+
+After deploying, run the following command using your **admin/root credentials** (the same credentials you used to run `terraform apply`):
+
+```bash
+aws bedrock-runtime converse \
+  --model-id us.anthropic.claude-sonnet-4-20250514-v1:0 \
+  --region us-east-1 \
+  --messages '[{"role":"user","content":[{"text":"hi"}]}]'
+```
+
+If you get a response from Claude, the marketplace subscription is active and you can proceed.
+
+> **Note:** Newer Claude models on Bedrock use **inference profiles** instead of direct model IDs. Inference profile IDs are prefixed with `us.` or `global.` (e.g., `us.anthropic.claude-sonnet-4-20250514-v1:0`). You can list available profiles with:
+>
+> ```bash
+> aws bedrock list-inference-profiles \
+>   --region us-east-1 \
+>   --query "inferenceProfileSummaries[?contains(inferenceProfileId,'anthropic')].{id:inferenceProfileId,name:inferenceProfileName}" \
+>   --output table
+> ```
 
 ## Configuring Claude Code with Bedrock
 
@@ -105,13 +130,14 @@ With these set, Claude Code CLI routes all model requests through Amazon Bedrock
 
 ## Retrieving IAM Credentials from Secrets Manager
 
-clauderooks stores IAM access keys in AWS Secrets Manager. The secret is named using the pattern `clauderooks-{env}/claude-code-keys` (e.g., `clauderooks-dev/claude-code-keys`).
+clauderocks stores IAM access keys in AWS Secrets Manager. The secret is named using the pattern `clauderocks-{env}/claude-code-keys` (e.g., `clauderocks-dev/claude-code-keys`).
 
 Retrieve the credentials using the AWS CLI:
 
 ```bash
 aws secretsmanager get-secret-value \
-  --secret-id "clauderooks-dev/claude-code-keys" \
+  --secret-id "clauderocks-dev/claude-code-keys" \
+  --region us-east-1 \
   --query 'SecretString' \
   --output text | jq .
 ```
@@ -129,25 +155,27 @@ To extract and export the values directly:
 
 ```bash
 SECRET=$(aws secretsmanager get-secret-value \
-  --secret-id "clauderooks-dev/claude-code-keys" \
+  --secret-id "clauderocks-dev/claude-code-keys" \
+  --region us-east-1 \
   --query 'SecretString' \
   --output text)
 
 export AWS_ACCESS_KEY_ID=$(echo "$SECRET" | jq -r '.access_key_id')
 export AWS_SECRET_ACCESS_KEY=$(echo "$SECRET" | jq -r '.secret_access_key')
+
 ```
 
 > **Security note:** These credentials belong to the IAM user, which only has permission to assume the Bedrock access role. You must assume the role (next step) before making Bedrock API calls.
 
 ## Assuming the IAM Role
 
-The IAM user created by clauderooks has a single permission: assuming the Bedrock access role. The role carries the actual Bedrock permissions.
+The IAM user created by clauderocks has a single permission: assuming the Bedrock access role. The role carries the actual Bedrock permissions.
 
 Assume the role using the AWS CLI:
 
 ```bash
 ROLE_OUTPUT=$(aws sts assume-role \
-  --role-arn "arn:aws:iam::<ACCOUNT_ID>:role/clauderooks-dev-bedrock-access" \
+  --role-arn "arn:aws:iam::<ACCOUNT_ID>:role/clauderocks-dev-bedrock-access" \
   --role-session-name "claude-code-session" \
   --duration-seconds 3600)
 
@@ -156,7 +184,7 @@ export AWS_SECRET_ACCESS_KEY=$(echo "$ROLE_OUTPUT" | jq -r '.Credentials.SecretA
 export AWS_SESSION_TOKEN=$(echo "$ROLE_OUTPUT" | jq -r '.Credentials.SessionToken')
 ```
 
-Replace `<ACCOUNT_ID>` with your AWS account ID. The role ARN follows the pattern `arn:aws:iam::<ACCOUNT_ID>:role/clauderooks-{env}-bedrock-access`.
+Replace `<ACCOUNT_ID>` with your AWS account ID. The role ARN follows the pattern `arn:aws:iam::<ACCOUNT_ID>:role/clauderocks-{env}-bedrock-access`.
 
 You can find the exact role ARN from the Terraform output:
 
@@ -186,20 +214,29 @@ Complete workflow from deployment to running Claude Code:
 
 ```bash
 # 1. Deploy infrastructure
-cd clauderooks
+cd clauderocks
 terraform init -backend=false
 terraform apply -var-file=envs/dev.tfvars
 
-# 2. Retrieve IAM credentials from Secrets Manager
+# 2. Activate Bedrock model access (one-time per AWS account)
+#    Run this with your admin/root credentials.
+aws bedrock-runtime converse \
+  --model-id us.anthropic.claude-sonnet-4-20250514-v1:0 \
+  --region us-east-1 \
+  --messages '[{"role":"user","content":[{"text":"hi"}]}]'
+
+# 3. Retrieve IAM credentials from Secrets Manager
 SECRET=$(aws secretsmanager get-secret-value \
-  --secret-id "clauderooks-dev/claude-code-keys" \
+  --secret-id "clauderocks-dev/claude-code-keys" \
+  --region us-east-1 \
   --query 'SecretString' \
   --output text)
 
 export AWS_ACCESS_KEY_ID=$(echo "$SECRET" | jq -r '.access_key_id')
 export AWS_SECRET_ACCESS_KEY=$(echo "$SECRET" | jq -r '.secret_access_key')
+unset AWS_SESSION_TOKEN
 
-# 3. Assume the Bedrock access role
+# 4. Assume the Bedrock access role
 ROLE_OUTPUT=$(aws sts assume-role \
   --role-arn "$(terraform output -raw iam_role_arn)" \
   --role-session-name "claude-code-session")
@@ -208,18 +245,18 @@ export AWS_ACCESS_KEY_ID=$(echo "$ROLE_OUTPUT" | jq -r '.Credentials.AccessKeyId
 export AWS_SECRET_ACCESS_KEY=$(echo "$ROLE_OUTPUT" | jq -r '.Credentials.SecretAccessKey')
 export AWS_SESSION_TOKEN=$(echo "$ROLE_OUTPUT" | jq -r '.Credentials.SessionToken')
 
-# 4. Configure Bedrock backend
+# 5. Configure Bedrock backend
 export CLAUDE_CODE_USE_BEDROCK=1
 export AWS_REGION=us-east-1
 
-# 5. Run Claude Code
+# 6. Run Claude Code
 claude
 ```
 
 ## Project Structure
 
 ```
-clauderooks/
+clauderocks/
 ├── main.tf                     # Root module — orchestrates all child modules
 ├── variables.tf                # Root input variables
 ├── outputs.tf                  # Root outputs
@@ -244,7 +281,7 @@ clauderooks/
 
 ## Environments
 
-clauderooks supports three isolated environments, each with its own state file, resource naming, and configuration:
+clauderocks supports three isolated environments, each with its own state file, resource naming, and configuration:
 
 | Environment | VPC Endpoints | Budget Limit | Use Case |
 |-------------|--------------|--------------|----------|
@@ -259,7 +296,49 @@ terraform plan -var-file=envs/dev.tfvars
 terraform apply -var-file=envs/dev.tfvars
 ```
 
-All resources are tagged with the environment name and use the naming pattern `clauderooks-{env}-*` to prevent collisions.
+All resources are tagged with the environment name and use the naming pattern `clauderocks-{env}-*` to prevent collisions.
+
+## Tearing Down Infrastructure
+
+To completely remove all clauderocks resources from your AWS account:
+
+1. **Switch to your admin/root credentials** (the same ones used for `terraform apply`):
+
+```bash
+unset AWS_ACCESS_KEY_ID
+unset AWS_SECRET_ACCESS_KEY
+unset AWS_SESSION_TOKEN
+```
+
+2. **Empty the S3 buckets.** Terraform cannot delete non-empty buckets. The CloudTrail bucket and the state bucket (which has versioning enabled) must be emptied first:
+
+```bash
+# Empty and remove the CloudTrail logs bucket
+aws s3 rb s3://clauderocks-dev-cloudtrail-logs --force --region us-east-1
+
+# Empty the versioned state bucket (must delete all object versions)
+aws s3api list-object-versions \
+  --bucket clauderocks-tfstate-dev \
+  --region us-east-1 \
+  --output json | \
+jq '{Objects: [(.Versions // [])[], (.DeleteMarkers // [])[]] | map({Key, VersionId})}' | \
+aws s3api delete-objects \
+  --bucket clauderocks-tfstate-dev \
+  --region us-east-1 \
+  --delete file:///dev/stdin
+
+aws s3 rb s3://clauderocks-tfstate-dev --region us-east-1
+```
+
+3. **Destroy the remaining resources:**
+
+```bash
+terraform destroy -var-file=envs/dev.tfvars
+```
+
+Replace `dev` with `staging` or `prod` as needed. Repeat for each environment you deployed.
+
+> **Note:** The AWS Marketplace subscription for Anthropic models is account-level and is not removed by `terraform destroy`. It costs nothing to leave active. To cancel it manually, visit the [AWS Marketplace subscriptions console](https://console.aws.amazon.com/marketplace/home#/subscriptions).
 
 ## Troubleshooting
 
@@ -283,7 +362,7 @@ User: arn:aws:iam::123456789012:user/claude-code-dev is not authorized to perfor
 aws sts get-caller-identity
 ```
 
-The ARN should show `assumed-role/clauderooks-{env}-bedrock-access`, not the IAM user.
+The ARN should show `assumed-role/clauderocks-{env}-bedrock-access`, not the IAM user.
 
 ### ModelNotAvailableException
 
@@ -317,7 +396,7 @@ Too many requests, please wait before trying again.
 **Fix:**
 1. Wait a few seconds and retry — Bedrock applies per-model rate limits
 2. If persistent, request a quota increase through the [AWS Service Quotas console](https://console.aws.amazon.com/servicequotas/)
-3. Check the CloudWatch dashboard (provisioned by clauderooks) for invocation patterns:
+3. Check the CloudWatch dashboard (provisioned by clauderocks) for invocation patterns:
 
 ```bash
 terraform output dashboard_arn
@@ -377,8 +456,40 @@ The security token included in the request is expired.
 
 ```bash
 aws secretsmanager list-secrets \
-  --filters Key=name,Values=clauderooks \
+  --filters Key=name,Values=clauderocks \
   --query 'SecretList[].Name'
 ```
 
 3. Check that the secret exists in the correct region
+
+### AWS Marketplace Access Denied
+
+**Symptom:**
+
+```
+An error occurred (AccessDeniedException) when calling the InvokeModel operation:
+Model access is denied due to IAM user or service role is not authorized to perform
+the required AWS Marketplace actions (aws-marketplace:ViewSubscriptions, aws-marketplace:Subscribe)
+```
+
+**Cause:** Anthropic models on Bedrock require an AWS Marketplace subscription. This must be triggered once per AWS account using admin/root credentials before the IAM role can invoke models.
+
+**Fix:**
+1. Switch to your admin/root credentials (unset any assumed role credentials):
+
+```bash
+unset AWS_ACCESS_KEY_ID
+unset AWS_SECRET_ACCESS_KEY
+unset AWS_SESSION_TOKEN
+```
+
+2. Invoke any Claude model once to trigger the marketplace subscription:
+
+```bash
+aws bedrock-runtime converse \
+  --model-id us.anthropic.claude-sonnet-4-20250514-v1:0 \
+  --region us-east-1 \
+  --messages '[{"role":"user","content":[{"text":"hi"}]}]'
+```
+
+3. After getting a successful response, re-assume the IAM role and retry. This is a one-time step per AWS account.

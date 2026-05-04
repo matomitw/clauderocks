@@ -1,211 +1,211 @@
-name: Terraform Drift Detection
+# name: Terraform Drift Detection
 
-on:
-  schedule:
-    # Run daily at 6:00 AM UTC
-    - cron: '0 6 * * *'
-  workflow_dispatch:
+# on:
+#   schedule:
+#     # Run daily at 6:00 AM UTC
+#     - cron: '0 6 * * *'
+#   workflow_dispatch:
 
-permissions:
-  id-token: write
-  contents: read
+# permissions:
+#   id-token: write
+#   contents: read
 
-env:
-  TF_VERSION: '1.6.0'
-  WORKING_DIR: 'clauderooks'
-  AWS_REGION: 'us-east-1'
+# env:
+#   TF_VERSION: '1.6.0'
+#   WORKING_DIR: 'clauderocks'
+#   AWS_REGION: 'us-east-1'
 
-jobs:
-  drift-detect:
-    name: Drift Detection — ${{ matrix.environment }}
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        environment: [dev, staging, prod]
-    defaults:
-      run:
-        working-directory: ${{ env.WORKING_DIR }}
+# jobs:
+#   drift-detect:
+#     name: Drift Detection — ${{ matrix.environment }}
+#     runs-on: ubuntu-latest
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         environment: [dev, staging, prod]
+#     defaults:
+#       run:
+#         working-directory: ${{ env.WORKING_DIR }}
 
-    steps:
-      # --------------------------------------------------
-      # 1. Checkout code
-      # --------------------------------------------------
-      - name: Checkout code
-        uses: actions/checkout@v4
+#     steps:
+#       # --------------------------------------------------
+#       # 1. Checkout code
+#       # --------------------------------------------------
+#       - name: Checkout code
+#         uses: actions/checkout@v4
 
-      # --------------------------------------------------
-      # 2. Configure AWS credentials via OIDC
-      # --------------------------------------------------
-      - name: Configure AWS credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          role-session-name: terraform-drift-${{ matrix.environment }}
-          aws-region: ${{ env.AWS_REGION }}
+#       # --------------------------------------------------
+#       # 2. Configure AWS credentials via OIDC
+#       # --------------------------------------------------
+#       - name: Configure AWS credentials (OIDC)
+#         uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+#           role-session-name: terraform-drift-${{ matrix.environment }}
+#           aws-region: ${{ env.AWS_REGION }}
 
-      # --------------------------------------------------
-      # 3. Setup Terraform
-      # --------------------------------------------------
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{ env.TF_VERSION }}
-          terraform_wrapper: false
+#       # --------------------------------------------------
+#       # 3. Setup Terraform
+#       # --------------------------------------------------
+#       - name: Setup Terraform
+#         uses: hashicorp/setup-terraform@v3
+#         with:
+#           terraform_version: ${{ env.TF_VERSION }}
+#           terraform_wrapper: false
 
-      # --------------------------------------------------
-      # 4. Terraform Init
-      # --------------------------------------------------
-      - name: Terraform Init
-        run: terraform init
+#       # --------------------------------------------------
+#       # 4. Terraform Init
+#       # --------------------------------------------------
+#       - name: Terraform Init
+#         run: terraform init
 
-      # --------------------------------------------------
-      # 5. Terraform Plan with detailed exit code
-      #    Exit code 0 = no changes, 1 = error, 2 = drift
-      # --------------------------------------------------
-      - name: Terraform Plan (detect drift)
-        id: plan
-        run: |
-          set +e
-          terraform plan \
-            -var-file=envs/${{ matrix.environment }}.tfvars \
-            -detailed-exitcode \
-            -no-color \
-            -out=tfplan 2>&1 | tee drift_report.txt
-          PLAN_EXIT=${PIPESTATUS[0]}
-          set -e
+#       # --------------------------------------------------
+#       # 5. Terraform Plan with detailed exit code
+#       #    Exit code 0 = no changes, 1 = error, 2 = drift
+#       # --------------------------------------------------
+#       - name: Terraform Plan (detect drift)
+#         id: plan
+#         run: |
+#           set +e
+#           terraform plan \
+#             -var-file=envs/${{ matrix.environment }}.tfvars \
+#             -detailed-exitcode \
+#             -no-color \
+#             -out=tfplan 2>&1 | tee drift_report.txt
+#           PLAN_EXIT=${PIPESTATUS[0]}
+#           set -e
 
-          echo "exitcode=$PLAN_EXIT" >> "$GITHUB_OUTPUT"
+#           echo "exitcode=$PLAN_EXIT" >> "$GITHUB_OUTPUT"
 
-          if [ "$PLAN_EXIT" -eq 2 ]; then
-            echo "drift_detected=true" >> "$GITHUB_OUTPUT"
-            echo "::warning::Drift detected in ${{ matrix.environment }} environment"
-          elif [ "$PLAN_EXIT" -eq 0 ]; then
-            echo "drift_detected=false" >> "$GITHUB_OUTPUT"
-            echo "No drift detected in ${{ matrix.environment }} environment"
-          else
-            echo "drift_detected=false" >> "$GITHUB_OUTPUT"
-            echo "::error::Terraform plan failed for ${{ matrix.environment }} environment"
-            exit 1
-          fi
+#           if [ "$PLAN_EXIT" -eq 2 ]; then
+#             echo "drift_detected=true" >> "$GITHUB_OUTPUT"
+#             echo "::warning::Drift detected in ${{ matrix.environment }} environment"
+#           elif [ "$PLAN_EXIT" -eq 0 ]; then
+#             echo "drift_detected=false" >> "$GITHUB_OUTPUT"
+#             echo "No drift detected in ${{ matrix.environment }} environment"
+#           else
+#             echo "drift_detected=false" >> "$GITHUB_OUTPUT"
+#             echo "::error::Terraform plan failed for ${{ matrix.environment }} environment"
+#             exit 1
+#           fi
 
-      # --------------------------------------------------
-      # 6. Generate drift report artifact
-      # --------------------------------------------------
-      - name: Generate drift report
-        if: steps.plan.outputs.drift_detected == 'true'
-        run: |
-          {
-            echo "============================================"
-            echo "  DRIFT REPORT — ${{ matrix.environment }}"
-            echo "  Generated: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
-            echo "  Workflow:  ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-            echo "============================================"
-            echo ""
-            cat drift_report.txt
-          } > drift_report_${{ matrix.environment }}.txt
+#       # --------------------------------------------------
+#       # 6. Generate drift report artifact
+#       # --------------------------------------------------
+#       - name: Generate drift report
+#         if: steps.plan.outputs.drift_detected == 'true'
+#         run: |
+#           {
+#             echo "============================================"
+#             echo "  DRIFT REPORT — ${{ matrix.environment }}"
+#             echo "  Generated: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+#             echo "  Workflow:  ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+#             echo "============================================"
+#             echo ""
+#             cat drift_report.txt
+#           } > drift_report_${{ matrix.environment }}.txt
 
-      # --------------------------------------------------
-      # 7. Upload drift report as workflow artifact
-      # --------------------------------------------------
-      - name: Upload drift report
-        if: steps.plan.outputs.drift_detected == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: drift-report-${{ matrix.environment }}
-          path: ${{ env.WORKING_DIR }}/drift_report_${{ matrix.environment }}.txt
-          retention-days: 30
+#       # --------------------------------------------------
+#       # 7. Upload drift report as workflow artifact
+#       # --------------------------------------------------
+#       - name: Upload drift report
+#         if: steps.plan.outputs.drift_detected == 'true'
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: drift-report-${{ matrix.environment }}
+#           path: ${{ env.WORKING_DIR }}/drift_report_${{ matrix.environment }}.txt
+#           retention-days: 30
 
-      # --------------------------------------------------
-      # 8. Send drift notification
-      #    Creates a GitHub issue to notify the team.
-      #    Alternatively, post to a Slack webhook via
-      #    secrets.SLACK_WEBHOOK_URL if configured.
-      # --------------------------------------------------
-      - name: Send drift notification (GitHub Issue)
-        if: steps.plan.outputs.drift_detected == 'true'
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const env = '${{ matrix.environment }}';
-            const runUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`;
-            const now = new Date().toISOString();
+#       # --------------------------------------------------
+#       # 8. Send drift notification
+#       #    Creates a GitHub issue to notify the team.
+#       #    Alternatively, post to a Slack webhook via
+#       #    secrets.SLACK_WEBHOOK_URL if configured.
+#       # --------------------------------------------------
+#       - name: Send drift notification (GitHub Issue)
+#         if: steps.plan.outputs.drift_detected == 'true'
+#         uses: actions/github-script@v7
+#         with:
+#           github-token: ${{ secrets.GITHUB_TOKEN }}
+#           script: |
+#             const env = '${{ matrix.environment }}';
+#             const runUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`;
+#             const now = new Date().toISOString();
 
-            const title = `⚠️ Terraform Drift Detected — ${env} [${now.split('T')[0]}]`;
-            const body = [
-              `## Terraform Drift Detected`,
-              ``,
-              `| Detail | Value |`,
-              `|--------|-------|`,
-              `| **Environment** | \`${env}\` |`,
-              `| **Detected at** | ${now} |`,
-              `| **Workflow run** | [View run](${runUrl}) |`,
-              ``,
-              `The scheduled drift detection workflow found that the **${env}** environment ` +
-              `has diverged from the declared Terraform state.`,
-              ``,
-              `### Next Steps`,
-              `1. Download the drift report artifact from the [workflow run](${runUrl})`,
-              `2. Review the planned changes to determine if they are expected`,
-              `3. Either:`,
-              `   - Run \`terraform apply -var-file=envs/${env}.tfvars\` to reconcile the drift`,
-              `   - Update the Terraform configuration to match the desired state`,
-              ``,
-              `---`,
-              `*This issue was automatically created by the Terraform Drift Detection workflow.*`,
-            ].join('\n');
+#             const title = `⚠️ Terraform Drift Detected — ${env} [${now.split('T')[0]}]`;
+#             const body = [
+#               `## Terraform Drift Detected`,
+#               ``,
+#               `| Detail | Value |`,
+#               `|--------|-------|`,
+#               `| **Environment** | \`${env}\` |`,
+#               `| **Detected at** | ${now} |`,
+#               `| **Workflow run** | [View run](${runUrl}) |`,
+#               ``,
+#               `The scheduled drift detection workflow found that the **${env}** environment ` +
+#               `has diverged from the declared Terraform state.`,
+#               ``,
+#               `### Next Steps`,
+#               `1. Download the drift report artifact from the [workflow run](${runUrl})`,
+#               `2. Review the planned changes to determine if they are expected`,
+#               `3. Either:`,
+#               `   - Run \`terraform apply -var-file=envs/${env}.tfvars\` to reconcile the drift`,
+#               `   - Update the Terraform configuration to match the desired state`,
+#               ``,
+#               `---`,
+#               `*This issue was automatically created by the Terraform Drift Detection workflow.*`,
+#             ].join('\n');
 
-            await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: title,
-              body: body,
-              labels: ['terraform', 'drift', env],
-            });
+#             await github.rest.issues.create({
+#               owner: context.repo.owner,
+#               repo: context.repo.repo,
+#               title: title,
+#               body: body,
+#               labels: ['terraform', 'drift', env],
+#             });
 
-      # --------------------------------------------------
-      # 9. Send Slack notification (optional)
-      # --------------------------------------------------
-      - name: Send drift notification (Slack)
-        if: steps.plan.outputs.drift_detected == 'true' && secrets.SLACK_WEBHOOK_URL != ''
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        run: |
-          curl -s -X POST "$SLACK_WEBHOOK_URL" \
-            -H 'Content-Type: application/json' \
-            -d "{
-              \"text\": \"⚠️ Terraform Drift Detected — *${{ matrix.environment }}*\",
-              \"blocks\": [
-                {
-                  \"type\": \"header\",
-                  \"text\": {
-                    \"type\": \"plain_text\",
-                    \"text\": \"⚠️ Terraform Drift Detected\"
-                  }
-                },
-                {
-                  \"type\": \"section\",
-                  \"fields\": [
-                    { \"type\": \"mrkdwn\", \"text\": \"*Environment:*\n${{ matrix.environment }}\" },
-                    { \"type\": \"mrkdwn\", \"text\": \"*Detected at:*\n$(date -u '+%Y-%m-%d %H:%M UTC')\" }
-                  ]
-                },
-                {
-                  \"type\": \"section\",
-                  \"text\": {
-                    \"type\": \"mrkdwn\",
-                    \"text\": \"<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow Run>\"
-                  }
-                }
-              ]
-            }"
+#       # --------------------------------------------------
+#       # 9. Send Slack notification (optional)
+#       # --------------------------------------------------
+#       - name: Send drift notification (Slack)
+#         if: steps.plan.outputs.drift_detected == 'true' && secrets.SLACK_WEBHOOK_URL != ''
+#         env:
+#           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+#         run: |
+#           curl -s -X POST "$SLACK_WEBHOOK_URL" \
+#             -H 'Content-Type: application/json' \
+#             -d "{
+#               \"text\": \"⚠️ Terraform Drift Detected — *${{ matrix.environment }}*\",
+#               \"blocks\": [
+#                 {
+#                   \"type\": \"header\",
+#                   \"text\": {
+#                     \"type\": \"plain_text\",
+#                     \"text\": \"⚠️ Terraform Drift Detected\"
+#                   }
+#                 },
+#                 {
+#                   \"type\": \"section\",
+#                   \"fields\": [
+#                     { \"type\": \"mrkdwn\", \"text\": \"*Environment:*\n${{ matrix.environment }}\" },
+#                     { \"type\": \"mrkdwn\", \"text\": \"*Detected at:*\n$(date -u '+%Y-%m-%d %H:%M UTC')\" }
+#                   ]
+#                 },
+#                 {
+#                   \"type\": \"section\",
+#                   \"text\": {
+#                     \"type\": \"mrkdwn\",
+#                     \"text\": \"<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow Run>\"
+#                   }
+#                 }
+#               ]
+#             }"
 
-      # --------------------------------------------------
-      # 10. Exit non-zero when drift is detected
-      # --------------------------------------------------
-      - name: Fail on drift
-        if: steps.plan.outputs.drift_detected == 'true'
-        run: |
-          echo "::error::Drift detected in ${{ matrix.environment }} environment. Review the drift report artifact."
-          exit 1
+#       # --------------------------------------------------
+#       # 10. Exit non-zero when drift is detected
+#       # --------------------------------------------------
+#       - name: Fail on drift
+#         if: steps.plan.outputs.drift_detected == 'true'
+#         run: |
+#           echo "::error::Drift detected in ${{ matrix.environment }} environment. Review the drift report artifact."
+#           exit 1

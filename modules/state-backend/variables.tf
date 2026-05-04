@@ -10,7 +10,7 @@ variable "environment" {
 variable "project_name" {
   type        = string
   description = "Project name for resource naming"
-  default     = "clauderooks"
+  default     = "clauderocks"
   validation {
     condition     = can(regex("^[a-z][a-z0-9-]{2,24}$", var.project_name))
     error_message = "Project name must be 3-25 lowercase alphanumeric characters or hyphens, starting with a letter."

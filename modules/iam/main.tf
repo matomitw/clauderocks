@@ -61,6 +61,15 @@ resource "aws_iam_policy" "bedrock_access" {
           "bedrock:*"
         ]
         Resource = "*"
+      },
+      {
+        Sid    = "MarketplaceModelAccess"
+        Effect = "Allow"
+        Action = [
+          "aws-marketplace:ViewSubscriptions",
+          "aws-marketplace:Subscribe"
+        ]
+        Resource = "*"
       }
     ]
   })
@@ -121,11 +130,15 @@ resource "aws_secretsmanager_secret_version" "claude_code_keys" {
 }
 
 # --- Secrets Manager Secret Rotation ---
-
-resource "aws_secretsmanager_secret_rotation" "claude_code_keys" {
-  secret_id = aws_secretsmanager_secret.claude_code_keys.id
-
-  rotation_rules {
-    automatically_after_days = var.secret_rotation_days
-  }
-}
+# NOTE: Rotation requires a Lambda function. To enable rotation later:
+# 1. Create a Lambda rotation function
+# 2. Uncomment and add: rotation_lambda_arn = aws_lambda_function.rotation.arn
+#
+# resource "aws_secretsmanager_secret_rotation" "claude_code_keys" {
+#   secret_id           = aws_secretsmanager_secret.claude_code_keys.id
+#   rotation_lambda_arn = "<LAMBDA_ARN>"
+#
+#   rotation_rules {
+#     automatically_after_days = var.secret_rotation_days
+#   }
+# }

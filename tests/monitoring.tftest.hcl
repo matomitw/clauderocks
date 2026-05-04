@@ -36,12 +36,12 @@ run "alarm_uses_configurable_threshold" {
 
   variables {
     environment               = "dev"
-    project_name              = "clauderooks"
+    project_name              = "clauderocks"
     alarm_error_threshold     = 10
     cloudtrail_retention_days = 30
-    alarm_sns_topic_arn       = "arn:aws:sns:us-east-1:123456789012:clauderooks-dev-alerts"
+    alarm_sns_topic_arn       = "arn:aws:sns:us-east-1:123456789012:clauderocks-dev-alerts"
     tags = {
-      Project     = "clauderooks"
+      Project     = "clauderocks"
       Environment = "dev"
       ManagedBy   = "terraform"
       Owner       = "test"
@@ -92,12 +92,12 @@ run "alarm_sends_to_correct_sns_topic" {
 
   variables {
     environment               = "dev"
-    project_name              = "clauderooks"
+    project_name              = "clauderocks"
     alarm_error_threshold     = 10
     cloudtrail_retention_days = 30
-    alarm_sns_topic_arn       = "arn:aws:sns:us-east-1:123456789012:clauderooks-dev-alerts"
+    alarm_sns_topic_arn       = "arn:aws:sns:us-east-1:123456789012:clauderocks-dev-alerts"
     tags = {
-      Project     = "clauderooks"
+      Project     = "clauderocks"
       Environment = "dev"
       ManagedBy   = "terraform"
       Owner       = "test"
@@ -105,12 +105,12 @@ run "alarm_sends_to_correct_sns_topic" {
   }
 
   assert {
-    condition     = contains(aws_cloudwatch_metric_alarm.bedrock_errors.alarm_actions, "arn:aws:sns:us-east-1:123456789012:clauderooks-dev-alerts")
+    condition     = contains(aws_cloudwatch_metric_alarm.bedrock_errors.alarm_actions, "arn:aws:sns:us-east-1:123456789012:clauderocks-dev-alerts")
     error_message = "CloudWatch alarm actions should include the configured SNS topic ARN"
   }
 
   assert {
-    condition     = contains(aws_cloudwatch_metric_alarm.bedrock_errors.ok_actions, "arn:aws:sns:us-east-1:123456789012:clauderooks-dev-alerts")
+    condition     = contains(aws_cloudwatch_metric_alarm.bedrock_errors.ok_actions, "arn:aws:sns:us-east-1:123456789012:clauderocks-dev-alerts")
     error_message = "CloudWatch alarm OK actions should include the configured SNS topic ARN"
   }
 }
@@ -148,12 +148,12 @@ run "cloudtrail_retention_uses_configurable_days" {
 
   variables {
     environment               = "dev"
-    project_name              = "clauderooks"
+    project_name              = "clauderocks"
     alarm_error_threshold     = 10
     cloudtrail_retention_days = 30
-    alarm_sns_topic_arn       = "arn:aws:sns:us-east-1:123456789012:clauderooks-dev-alerts"
+    alarm_sns_topic_arn       = "arn:aws:sns:us-east-1:123456789012:clauderocks-dev-alerts"
     tags = {
-      Project     = "clauderooks"
+      Project     = "clauderocks"
       Environment = "dev"
       ManagedBy   = "terraform"
       Owner       = "test"
@@ -204,12 +204,12 @@ run "cloudtrail_created_with_correct_name" {
 
   variables {
     environment               = "dev"
-    project_name              = "clauderooks"
+    project_name              = "clauderocks"
     alarm_error_threshold     = 10
     cloudtrail_retention_days = 30
-    alarm_sns_topic_arn       = "arn:aws:sns:us-east-1:123456789012:clauderooks-dev-alerts"
+    alarm_sns_topic_arn       = "arn:aws:sns:us-east-1:123456789012:clauderocks-dev-alerts"
     tags = {
-      Project     = "clauderooks"
+      Project     = "clauderocks"
       Environment = "dev"
       ManagedBy   = "terraform"
       Owner       = "test"
@@ -217,8 +217,8 @@ run "cloudtrail_created_with_correct_name" {
   }
 
   assert {
-    condition     = aws_cloudtrail.bedrock.name == "clauderooks-dev-bedrock-trail"
-    error_message = "CloudTrail trail name should follow the naming convention: clauderooks-dev-bedrock-trail"
+    condition     = aws_cloudtrail.bedrock.name == "clauderocks-dev-bedrock-trail"
+    error_message = "CloudTrail trail name should follow the naming convention: clauderocks-dev-bedrock-trail"
   }
 
   assert {
@@ -260,12 +260,12 @@ run "dashboard_created_with_correct_name" {
 
   variables {
     environment               = "dev"
-    project_name              = "clauderooks"
+    project_name              = "clauderocks"
     alarm_error_threshold     = 10
     cloudtrail_retention_days = 30
-    alarm_sns_topic_arn       = "arn:aws:sns:us-east-1:123456789012:clauderooks-dev-alerts"
+    alarm_sns_topic_arn       = "arn:aws:sns:us-east-1:123456789012:clauderocks-dev-alerts"
     tags = {
-      Project     = "clauderooks"
+      Project     = "clauderocks"
       Environment = "dev"
       ManagedBy   = "terraform"
       Owner       = "test"
@@ -273,7 +273,7 @@ run "dashboard_created_with_correct_name" {
   }
 
   assert {
-    condition     = aws_cloudwatch_dashboard.bedrock.dashboard_name == "clauderooks-dev-bedrock-dashboard"
-    error_message = "Dashboard name should follow the naming convention: clauderooks-dev-bedrock-dashboard"
+    condition     = aws_cloudwatch_dashboard.bedrock.dashboard_name == "clauderocks-dev-bedrock-dashboard"
+    error_message = "Dashboard name should follow the naming convention: clauderocks-dev-bedrock-dashboard"
   }
 }

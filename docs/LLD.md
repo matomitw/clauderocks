@@ -1,8 +1,8 @@
-# Low-Level Design Document — clauderooks
+# Low-Level Design Document — clauderocks
 
 ## 1. Introduction
 
-This Low-Level Design (LLD) document provides a detailed implementation reference for the **clauderooks** Terraform project. It covers every Terraform resource within each module, all input variables with types and constraints, all outputs, inter-module data flows, state backend configuration, and CI/CD pipeline stages.
+This Low-Level Design (LLD) document provides a detailed implementation reference for the **clauderocks** Terraform project. It covers every Terraform resource within each module, all input variables with types and constraints, all outputs, inter-module data flows, state backend configuration, and CI/CD pipeline stages.
 
 For the high-level architecture overview, module responsibilities, and design decisions, see [HLD.md](./HLD.md).
 
@@ -119,9 +119,9 @@ For the high-level architecture overview, module responsibilities, and design de
 | Variable | Type | Description | Default | Constraints |
 |----------|------|-------------|---------|-------------|
 | `environment` | `string` | Deployment environment (dev, staging, prod) | — (required) | Must be one of: `dev`, `staging`, `prod` |
-| `project_name` | `string` | Project name used in resource naming and tagging | `"clauderooks"` | 3-25 lowercase alphanumeric or hyphens, starting with a letter (`^[a-z][a-z0-9-]{2,24}$`) |
+| `project_name` | `string` | Project name used in resource naming and tagging | `"clauderocks"` | 3-25 lowercase alphanumeric or hyphens, starting with a letter (`^[a-z][a-z0-9-]{2,24}$`) |
 | `aws_region` | `string` | AWS region for all resources | `"us-east-1"` | — |
-| `owner` | `string` | Owner tag value | `"clauderooks-team"` | — |
+| `owner` | `string` | Owner tag value | `"clauderocks-team"` | — |
 | `bedrock_model_ids` | `list(string)` | List of Bedrock model identifiers to enable | `["anthropic.claude-sonnet-4-20250514"]` | At least one model ID required |
 | `enable_vpc_endpoints` | `bool` | Whether to create VPC endpoints for private Bedrock access | `false` | — |
 | `vpc_cidr` | `string` | CIDR block for the VPC | `"10.0.0.0/16"` | Must be a valid CIDR block |
@@ -137,7 +137,7 @@ For the high-level architecture overview, module responsibilities, and design de
 | Variable | Type | Description | Default | Constraints |
 |----------|------|-------------|---------|-------------|
 | `environment` | `string` | Environment name (dev, staging, prod) | — (required) | Must be one of: `dev`, `staging`, `prod` |
-| `project_name` | `string` | Project name for resource naming | `"clauderooks"` | 3-25 lowercase alphanumeric or hyphens, starting with a letter |
+| `project_name` | `string` | Project name for resource naming | `"clauderocks"` | 3-25 lowercase alphanumeric or hyphens, starting with a letter |
 | `tags` | `map(string)` | Common tags to apply to all resources | — (required) | — |
 
 ### 3.3 IAM Module Variables
@@ -145,7 +145,7 @@ For the high-level architecture overview, module responsibilities, and design de
 | Variable | Type | Description | Default | Constraints |
 |----------|------|-------------|---------|-------------|
 | `environment` | `string` | Environment name (dev, staging, prod) | — (required) | Must be one of: `dev`, `staging`, `prod` |
-| `project_name` | `string` | Project name for resource naming | `"clauderooks"` | 3-25 lowercase alphanumeric or hyphens, starting with a letter |
+| `project_name` | `string` | Project name for resource naming | `"clauderocks"` | 3-25 lowercase alphanumeric or hyphens, starting with a letter |
 | `max_session_duration` | `number` | Maximum IAM role session duration in seconds | `3600` | 900–43200 |
 | `secret_rotation_days` | `number` | Secrets Manager rotation interval in days | `90` | 1–365 |
 | `tags` | `map(string)` | Common tags to apply to all resources | — (required) | — |
@@ -164,7 +164,7 @@ For the high-level architecture overview, module responsibilities, and design de
 | Variable | Type | Description | Default | Constraints |
 |----------|------|-------------|---------|-------------|
 | `environment` | `string` | Environment name (dev, staging, prod) | — (required) | Must be one of: `dev`, `staging`, `prod` |
-| `project_name` | `string` | Project name for resource naming | `"clauderooks"` | — |
+| `project_name` | `string` | Project name for resource naming | `"clauderocks"` | — |
 | `vpc_cidr` | `string` | CIDR block for the VPC | `"10.0.0.0/16"` | Must be a valid CIDR block |
 | `enable_vpc_endpoints` | `bool` | Whether to create VPC endpoints for private Bedrock access | `true` | — |
 | `iam_role_arn` | `string` | IAM role ARN for VPC endpoint policy | — (required) | — |
@@ -176,7 +176,7 @@ For the high-level architecture overview, module responsibilities, and design de
 | Variable | Type | Description | Default | Constraints |
 |----------|------|-------------|---------|-------------|
 | `environment` | `string` | Environment name (dev, staging, prod) | — (required) | Must be one of: `dev`, `staging`, `prod` |
-| `project_name` | `string` | Project name for resource naming | `"clauderooks"` | — |
+| `project_name` | `string` | Project name for resource naming | `"clauderocks"` | — |
 | `alarm_error_threshold` | `number` | Error rate threshold for CloudWatch alarm | `5` | Must be > 0 |
 | `cloudtrail_retention_days` | `number` | CloudTrail log retention in days | `90` | >= 1 |
 | `alarm_sns_topic_arn` | `string` | SNS topic ARN for alarm notifications | — (required) | — |
@@ -187,7 +187,7 @@ For the high-level architecture overview, module responsibilities, and design de
 | Variable | Type | Description | Default | Constraints |
 |----------|------|-------------|---------|-------------|
 | `environment` | `string` | Environment name (dev, staging, prod) | — (required) | Must be one of: `dev`, `staging`, `prod` |
-| `project_name` | `string` | Project name for resource naming | `"clauderooks"` | — |
+| `project_name` | `string` | Project name for resource naming | `"clauderocks"` | — |
 | `monthly_budget_limit` | `number` | Monthly budget limit in USD | — (required) | Must be > 0 |
 | `alert_emails` | `list(string)` | Email addresses for budget alerts | — (required) | At least one email required |
 | `cost_allocation_tags` | `map(string)` | Tags for budget filtering | — (required) | — |
@@ -386,8 +386,8 @@ resource "aws_vpc_endpoint" "bedrock_runtime" {
 
 | Resource | Naming Pattern | Example (dev) |
 |----------|---------------|---------------|
-| S3 State Bucket | `{project_name}-tfstate-{environment}` | `clauderooks-tfstate-dev` |
-| DynamoDB Lock Table | `{project_name}-tflock-{environment}` | `clauderooks-tflock-dev` |
+| S3 State Bucket | `{project_name}-tfstate-{environment}` | `clauderocks-tfstate-dev` |
+| DynamoDB Lock Table | `{project_name}-tflock-{environment}` | `clauderocks-tflock-dev` |
 
 ### 6.2 S3 Bucket Configuration
 
@@ -413,10 +413,10 @@ Each environment requires a `backend.tf` file (or backend configuration passed v
 ```hcl
 terraform {
   backend "s3" {
-    bucket         = "clauderooks-tfstate-{environment}"
+    bucket         = "clauderocks-tfstate-{environment}"
     key            = "terraform.tfstate"
     region         = "us-east-1"
-    dynamodb_table = "clauderooks-tflock-{environment}"
+    dynamodb_table = "clauderocks-tflock-{environment}"
     encrypt        = true
   }
 }
@@ -426,9 +426,9 @@ Replace `{environment}` with the target environment name. Per-environment exampl
 
 | Environment | S3 Bucket | DynamoDB Table | State Key |
 |-------------|-----------|----------------|-----------|
-| dev | `clauderooks-tfstate-dev` | `clauderooks-tflock-dev` | `terraform.tfstate` |
-| staging | `clauderooks-tfstate-staging` | `clauderooks-tflock-staging` | `terraform.tfstate` |
-| prod | `clauderooks-tfstate-prod` | `clauderooks-tflock-prod` | `terraform.tfstate` |
+| dev | `clauderocks-tfstate-dev` | `clauderocks-tflock-dev` | `terraform.tfstate` |
+| staging | `clauderocks-tfstate-staging` | `clauderocks-tflock-staging` | `terraform.tfstate` |
+| prod | `clauderocks-tfstate-prod` | `clauderocks-tflock-prod` | `terraform.tfstate` |
 
 ### 6.5 Bootstrap Procedure
 
@@ -450,10 +450,10 @@ All modules receive a `tags` variable populated from the root module's `common_t
 ```hcl
 locals {
   common_tags = {
-    Project     = var.project_name    # "clauderooks"
+    Project     = var.project_name    # "clauderocks"
     Environment = var.environment     # "dev" | "staging" | "prod"
     ManagedBy   = "terraform"
-    Owner       = var.owner           # "clauderooks-team"
+    Owner       = var.owner           # "clauderocks-team"
   }
 
   name_prefix = "${var.project_name}-${var.environment}"
@@ -550,7 +550,7 @@ All workflows use **OIDC-based authentication** to AWS (no static access keys). 
 
 ### 9.2 PR Validation Pipeline (`terraform-pr.yml`)
 
-**Trigger**: Pull request to `main` branch (paths: `clauderooks/**`), or manual `workflow_dispatch`.
+**Trigger**: Pull request to `main` branch (paths: `clauderocks/**`), or manual `workflow_dispatch`.
 
 **Permissions**: `id-token: write`, `contents: read`, `pull-requests: write`
 
@@ -575,7 +575,7 @@ All workflows use **OIDC-based authentication** to AWS (no static access keys). 
 
 ### 9.3 Apply Pipeline (`terraform-apply.yml`)
 
-**Trigger**: Push to `main` branch (paths: `clauderooks/**`), or manual `workflow_dispatch` with environment selection.
+**Trigger**: Push to `main` branch (paths: `clauderocks/**`), or manual `workflow_dispatch` with environment selection.
 
 **Permissions**: `id-token: write`, `contents: read`
 
@@ -655,7 +655,7 @@ sequenceDiagram
 ### 10.2 File Structure Reference
 
 ```
-clauderooks/
+clauderocks/
 ├── main.tf                          # Root module — orchestrates all child modules
 ├── variables.tf                     # Root input variables with validation
 ├── outputs.tf                       # Root outputs (re-exports from modules)

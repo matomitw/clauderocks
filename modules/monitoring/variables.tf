@@ -10,7 +10,7 @@ variable "environment" {
 variable "project_name" {
   type        = string
   description = "Project name for resource naming"
-  default     = "clauderooks"
+  default     = "clauderocks"
 }
 
 variable "alarm_error_threshold" {

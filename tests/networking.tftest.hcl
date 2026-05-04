@@ -22,19 +22,19 @@ run "vpc_created_with_correct_cidr" {
   override_data {
     target = data.aws_iam_policy_document.endpoint_policy
     values = {
-      json = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"AllowBedrockAccessForRole\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::123456789012:role/clauderooks-dev-bedrock-access\"},\"Action\":\"*\",\"Resource\":\"*\"}]}"
+      json = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"AllowBedrockAccessForRole\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::123456789012:role/clauderocks-dev-bedrock-access\"},\"Action\":\"*\",\"Resource\":\"*\"}]}"
     }
   }
 
   variables {
     environment          = "dev"
-    project_name         = "clauderooks"
+    project_name         = "clauderocks"
     vpc_cidr             = "10.0.0.0/16"
     enable_vpc_endpoints = true
-    iam_role_arn         = "arn:aws:iam::123456789012:role/clauderooks-dev-bedrock-access"
+    iam_role_arn         = "arn:aws:iam::123456789012:role/clauderocks-dev-bedrock-access"
     region               = "us-east-1"
     tags = {
-      Project     = "clauderooks"
+      Project     = "clauderocks"
       Environment = "dev"
       ManagedBy   = "terraform"
       Owner       = "test"
@@ -76,19 +76,19 @@ run "private_subnets_multi_az" {
   override_data {
     target = data.aws_iam_policy_document.endpoint_policy
     values = {
-      json = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"AllowBedrockAccessForRole\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::123456789012:role/clauderooks-dev-bedrock-access\"},\"Action\":\"*\",\"Resource\":\"*\"}]}"
+      json = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"AllowBedrockAccessForRole\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::123456789012:role/clauderocks-dev-bedrock-access\"},\"Action\":\"*\",\"Resource\":\"*\"}]}"
     }
   }
 
   variables {
     environment          = "dev"
-    project_name         = "clauderooks"
+    project_name         = "clauderocks"
     vpc_cidr             = "10.0.0.0/16"
     enable_vpc_endpoints = true
-    iam_role_arn         = "arn:aws:iam::123456789012:role/clauderooks-dev-bedrock-access"
+    iam_role_arn         = "arn:aws:iam::123456789012:role/clauderocks-dev-bedrock-access"
     region               = "us-east-1"
     tags = {
-      Project     = "clauderooks"
+      Project     = "clauderocks"
       Environment = "dev"
       ManagedBy   = "terraform"
       Owner       = "test"
@@ -130,19 +130,19 @@ run "vpc_endpoints_created_when_enabled" {
   override_data {
     target = data.aws_iam_policy_document.endpoint_policy
     values = {
-      json = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"AllowBedrockAccessForRole\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::123456789012:role/clauderooks-dev-bedrock-access\"},\"Action\":\"*\",\"Resource\":\"*\"}]}"
+      json = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"AllowBedrockAccessForRole\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::123456789012:role/clauderocks-dev-bedrock-access\"},\"Action\":\"*\",\"Resource\":\"*\"}]}"
     }
   }
 
   variables {
     environment          = "dev"
-    project_name         = "clauderooks"
+    project_name         = "clauderocks"
     vpc_cidr             = "10.0.0.0/16"
     enable_vpc_endpoints = true
-    iam_role_arn         = "arn:aws:iam::123456789012:role/clauderooks-dev-bedrock-access"
+    iam_role_arn         = "arn:aws:iam::123456789012:role/clauderocks-dev-bedrock-access"
     region               = "us-east-1"
     tags = {
-      Project     = "clauderooks"
+      Project     = "clauderocks"
       Environment = "dev"
       ManagedBy   = "terraform"
       Owner       = "test"
@@ -200,13 +200,13 @@ run "vpc_endpoints_skipped_when_disabled" {
 
   variables {
     environment          = "dev"
-    project_name         = "clauderooks"
+    project_name         = "clauderocks"
     vpc_cidr             = "10.0.0.0/16"
     enable_vpc_endpoints = false
-    iam_role_arn         = "arn:aws:iam::123456789012:role/clauderooks-dev-bedrock-access"
+    iam_role_arn         = "arn:aws:iam::123456789012:role/clauderocks-dev-bedrock-access"
     region               = "us-east-1"
     tags = {
-      Project     = "clauderooks"
+      Project     = "clauderocks"
       Environment = "dev"
       ManagedBy   = "terraform"
       Owner       = "test"
@@ -243,19 +243,19 @@ run "endpoint_policy_references_iam_role" {
   override_data {
     target = data.aws_iam_policy_document.endpoint_policy
     values = {
-      json = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"AllowBedrockAccessForRole\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::123456789012:role/clauderooks-dev-bedrock-access\"},\"Action\":\"*\",\"Resource\":\"*\"}]}"
+      json = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"AllowBedrockAccessForRole\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::123456789012:role/clauderocks-dev-bedrock-access\"},\"Action\":\"*\",\"Resource\":\"*\"}]}"
     }
   }
 
   variables {
     environment          = "dev"
-    project_name         = "clauderooks"
+    project_name         = "clauderocks"
     vpc_cidr             = "10.0.0.0/16"
     enable_vpc_endpoints = true
-    iam_role_arn         = "arn:aws:iam::123456789012:role/clauderooks-dev-bedrock-access"
+    iam_role_arn         = "arn:aws:iam::123456789012:role/clauderocks-dev-bedrock-access"
     region               = "us-east-1"
     tags = {
-      Project     = "clauderooks"
+      Project     = "clauderocks"
       Environment = "dev"
       ManagedBy   = "terraform"
       Owner       = "test"
@@ -276,7 +276,7 @@ run "endpoint_policy_references_iam_role" {
   }
 
   assert {
-    condition     = strcontains(aws_vpc_endpoint.bedrock_runtime[0].policy, "arn:aws:iam::123456789012:role/clauderooks-dev-bedrock-access")
+    condition     = strcontains(aws_vpc_endpoint.bedrock_runtime[0].policy, "arn:aws:iam::123456789012:role/clauderocks-dev-bedrock-access")
     error_message = "Endpoint policy should reference the provided IAM role ARN"
   }
 }

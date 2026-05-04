@@ -21,9 +21,9 @@ run "s3_bucket_naming_convention" {
 
   variables {
     environment  = "dev"
-    project_name = "clauderooks"
+    project_name = "clauderocks"
     tags = {
-      Project     = "clauderooks"
+      Project     = "clauderocks"
       Environment = "dev"
       ManagedBy   = "terraform"
       Owner       = "test"
@@ -31,7 +31,7 @@ run "s3_bucket_naming_convention" {
   }
 
   assert {
-    condition     = aws_s3_bucket.state.bucket == "clauderooks-tfstate-dev"
+    condition     = aws_s3_bucket.state.bucket == "clauderocks-tfstate-dev"
     error_message = "S3 bucket name should follow the pattern {project_name}-tfstate-{environment}"
   }
 }
@@ -47,9 +47,9 @@ run "s3_bucket_versioning_enabled" {
 
   variables {
     environment  = "dev"
-    project_name = "clauderooks"
+    project_name = "clauderocks"
     tags = {
-      Project     = "clauderooks"
+      Project     = "clauderocks"
       Environment = "dev"
       ManagedBy   = "terraform"
       Owner       = "test"
@@ -73,9 +73,9 @@ run "s3_bucket_encryption_aes256" {
 
   variables {
     environment  = "dev"
-    project_name = "clauderooks"
+    project_name = "clauderocks"
     tags = {
-      Project     = "clauderooks"
+      Project     = "clauderocks"
       Environment = "dev"
       ManagedBy   = "terraform"
       Owner       = "test"
@@ -99,9 +99,9 @@ run "s3_bucket_public_access_blocked" {
 
   variables {
     environment  = "dev"
-    project_name = "clauderooks"
+    project_name = "clauderocks"
     tags = {
-      Project     = "clauderooks"
+      Project     = "clauderocks"
       Environment = "dev"
       ManagedBy   = "terraform"
       Owner       = "test"
@@ -140,9 +140,9 @@ run "dynamodb_lock_table_hash_key" {
 
   variables {
     environment  = "dev"
-    project_name = "clauderooks"
+    project_name = "clauderocks"
     tags = {
-      Project     = "clauderooks"
+      Project     = "clauderocks"
       Environment = "dev"
       ManagedBy   = "terraform"
       Owner       = "test"
@@ -155,7 +155,7 @@ run "dynamodb_lock_table_hash_key" {
   }
 
   assert {
-    condition     = aws_dynamodb_table.lock.name == "clauderooks-tflock-dev"
+    condition     = aws_dynamodb_table.lock.name == "clauderocks-tflock-dev"
     error_message = "DynamoDB table name should follow the pattern {project_name}-tflock-{environment}"
   }
 }

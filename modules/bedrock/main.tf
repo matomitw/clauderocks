@@ -5,7 +5,7 @@
 # --- Local Values ---
 
 locals {
-  name_prefix = "clauderooks-${var.environment}"
+  name_prefix = "clauderocks-${var.environment}"
 
   # Construct model ARNs from model IDs using the predictable Bedrock ARN pattern
   model_arns = {
@@ -83,10 +83,6 @@ resource "aws_bedrock_model_invocation_logging_configuration" "this" {
     cloudwatch_config {
       log_group_name = aws_cloudwatch_log_group.bedrock_invocation.name
       role_arn       = aws_iam_role.bedrock_logging.arn
-
-      large_data_delivery_s3_config {
-        bucket_name = ""
-      }
     }
   }
 

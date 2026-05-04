@@ -9,7 +9,7 @@ mock_provider "aws" {}
 
 variables {
   environment          = "dev"
-  project_name         = "clauderooks"
+  project_name         = "clauderocks"
   monthly_budget_limit = 50
   alert_emails         = ["test@example.com"]
 }
@@ -87,7 +87,7 @@ run "provider_default_tags_propagates_common_tags" {
     error_message = "common_tags must contain exactly 4 tags (Project, Environment, ManagedBy, Owner)"
   }
 
-  # Verify the Owner tag is present and non-empty (default is "clauderooks-team")
+  # Verify the Owner tag is present and non-empty (default is "clauderocks-team")
   assert {
     condition     = length(local.common_tags["Owner"]) > 0
     error_message = "Owner tag must have a non-empty value"
@@ -109,8 +109,8 @@ run "tags_consistent_for_staging_environment" {
   }
 
   assert {
-    condition     = local.common_tags["Project"] == "clauderooks"
-    error_message = "Project tag must remain 'clauderooks' regardless of environment"
+    condition     = local.common_tags["Project"] == "clauderocks"
+    error_message = "Project tag must remain 'clauderocks' regardless of environment"
   }
 
   assert {

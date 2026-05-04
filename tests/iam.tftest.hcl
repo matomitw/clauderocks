@@ -14,11 +14,11 @@ run "iam_user_naming_convention" {
 
   variables {
     environment          = "dev"
-    project_name         = "clauderooks"
+    project_name         = "clauderocks"
     max_session_duration = 3600
     secret_rotation_days = 90
     tags = {
-      Project     = "clauderooks"
+      Project     = "clauderocks"
       Environment = "dev"
       ManagedBy   = "terraform"
       Owner       = "test"
@@ -42,11 +42,11 @@ run "iam_role_trust_policy" {
 
   variables {
     environment          = "dev"
-    project_name         = "clauderooks"
+    project_name         = "clauderocks"
     max_session_duration = 3600
     secret_rotation_days = 90
     tags = {
-      Project     = "clauderooks"
+      Project     = "clauderocks"
       Environment = "dev"
       ManagedBy   = "terraform"
       Owner       = "test"
@@ -54,7 +54,7 @@ run "iam_role_trust_policy" {
   }
 
   assert {
-    condition     = aws_iam_role.bedrock_access.name == "clauderooks-dev-bedrock-access"
+    condition     = aws_iam_role.bedrock_access.name == "clauderocks-dev-bedrock-access"
     error_message = "IAM role name should follow the pattern {project_name}-{environment}-bedrock-access"
   }
 
@@ -75,11 +75,11 @@ run "bedrock_policy_attached_to_role" {
 
   variables {
     environment          = "dev"
-    project_name         = "clauderooks"
+    project_name         = "clauderocks"
     max_session_duration = 3600
     secret_rotation_days = 90
     tags = {
-      Project     = "clauderooks"
+      Project     = "clauderocks"
       Environment = "dev"
       ManagedBy   = "terraform"
       Owner       = "test"
@@ -87,7 +87,7 @@ run "bedrock_policy_attached_to_role" {
   }
 
   assert {
-    condition     = aws_iam_role_policy_attachment.bedrock_access.role == "clauderooks-dev-bedrock-access"
+    condition     = aws_iam_role_policy_attachment.bedrock_access.role == "clauderocks-dev-bedrock-access"
     error_message = "Bedrock access policy must be attached to the IAM role"
   }
 }
@@ -103,11 +103,11 @@ run "user_policy_assume_role_only" {
 
   variables {
     environment          = "dev"
-    project_name         = "clauderooks"
+    project_name         = "clauderocks"
     max_session_duration = 3600
     secret_rotation_days = 90
     tags = {
-      Project     = "clauderooks"
+      Project     = "clauderocks"
       Environment = "dev"
       ManagedBy   = "terraform"
       Owner       = "test"
@@ -115,7 +115,7 @@ run "user_policy_assume_role_only" {
   }
 
   assert {
-    condition     = aws_iam_user_policy.assume_role_only.name == "clauderooks-dev-assume-role-only"
+    condition     = aws_iam_user_policy.assume_role_only.name == "clauderocks-dev-assume-role-only"
     error_message = "User inline policy name should follow the pattern {project_name}-{environment}-assume-role-only"
   }
 
@@ -136,11 +136,11 @@ run "secrets_manager_secret_created" {
 
   variables {
     environment          = "dev"
-    project_name         = "clauderooks"
+    project_name         = "clauderocks"
     max_session_duration = 3600
     secret_rotation_days = 90
     tags = {
-      Project     = "clauderooks"
+      Project     = "clauderocks"
       Environment = "dev"
       ManagedBy   = "terraform"
       Owner       = "test"
@@ -148,7 +148,7 @@ run "secrets_manager_secret_created" {
   }
 
   assert {
-    condition     = aws_secretsmanager_secret.claude_code_keys.name == "clauderooks-dev/claude-code-keys"
+    condition     = aws_secretsmanager_secret.claude_code_keys.name == "clauderocks-dev/claude-code-keys"
     error_message = "Secrets Manager secret name should follow the pattern {project_name}-{environment}/claude-code-keys"
   }
 }
@@ -166,11 +166,11 @@ run "secret_arn_output_is_sensitive" {
 
   variables {
     environment          = "dev"
-    project_name         = "clauderooks"
+    project_name         = "clauderocks"
     max_session_duration = 3600
     secret_rotation_days = 90
     tags = {
-      Project     = "clauderooks"
+      Project     = "clauderocks"
       Environment = "dev"
       ManagedBy   = "terraform"
       Owner       = "test"

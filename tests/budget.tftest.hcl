@@ -14,12 +14,12 @@ run "budget_type_cost_and_monthly" {
 
   variables {
     environment          = "dev"
-    project_name         = "clauderooks"
+    project_name         = "clauderocks"
     monthly_budget_limit = 100
     alert_emails         = ["test@example.com"]
-    cost_allocation_tags = { Project = "clauderooks" }
+    cost_allocation_tags = { Project = "clauderocks" }
     tags = {
-      Project     = "clauderooks"
+      Project     = "clauderocks"
       Environment = "dev"
       ManagedBy   = "terraform"
       Owner       = "test"
@@ -48,12 +48,12 @@ run "budget_limit_matches_variable" {
 
   variables {
     environment          = "dev"
-    project_name         = "clauderooks"
+    project_name         = "clauderocks"
     monthly_budget_limit = 100
     alert_emails         = ["test@example.com"]
-    cost_allocation_tags = { Project = "clauderooks" }
+    cost_allocation_tags = { Project = "clauderocks" }
     tags = {
-      Project     = "clauderooks"
+      Project     = "clauderocks"
       Environment = "dev"
       ManagedBy   = "terraform"
       Owner       = "test"
@@ -82,12 +82,12 @@ run "budget_notification_thresholds" {
 
   variables {
     environment          = "dev"
-    project_name         = "clauderooks"
+    project_name         = "clauderocks"
     monthly_budget_limit = 100
     alert_emails         = ["test@example.com"]
-    cost_allocation_tags = { Project = "clauderooks" }
+    cost_allocation_tags = { Project = "clauderocks" }
     tags = {
-      Project     = "clauderooks"
+      Project     = "clauderocks"
       Environment = "dev"
       ManagedBy   = "terraform"
       Owner       = "test"
@@ -144,12 +144,12 @@ run "sns_topic_correct_naming" {
 
   variables {
     environment          = "dev"
-    project_name         = "clauderooks"
+    project_name         = "clauderocks"
     monthly_budget_limit = 100
     alert_emails         = ["test@example.com"]
-    cost_allocation_tags = { Project = "clauderooks" }
+    cost_allocation_tags = { Project = "clauderocks" }
     tags = {
-      Project     = "clauderooks"
+      Project     = "clauderocks"
       Environment = "dev"
       ManagedBy   = "terraform"
       Owner       = "test"
@@ -157,8 +157,8 @@ run "sns_topic_correct_naming" {
   }
 
   assert {
-    condition     = aws_sns_topic.budget_alerts.name == "clauderooks-dev-budget-alerts"
-    error_message = "SNS topic name should follow the naming convention: clauderooks-dev-budget-alerts"
+    condition     = aws_sns_topic.budget_alerts.name == "clauderocks-dev-budget-alerts"
+    error_message = "SNS topic name should follow the naming convention: clauderocks-dev-budget-alerts"
   }
 }
 
@@ -173,12 +173,12 @@ run "budget_name_follows_convention" {
 
   variables {
     environment          = "dev"
-    project_name         = "clauderooks"
+    project_name         = "clauderocks"
     monthly_budget_limit = 100
     alert_emails         = ["test@example.com"]
-    cost_allocation_tags = { Project = "clauderooks" }
+    cost_allocation_tags = { Project = "clauderocks" }
     tags = {
-      Project     = "clauderooks"
+      Project     = "clauderocks"
       Environment = "dev"
       ManagedBy   = "terraform"
       Owner       = "test"
@@ -186,7 +186,7 @@ run "budget_name_follows_convention" {
   }
 
   assert {
-    condition     = aws_budgets_budget.monthly.name == "clauderooks-dev-monthly-budget"
-    error_message = "Budget name should follow the naming convention: clauderooks-dev-monthly-budget"
+    condition     = aws_budgets_budget.monthly.name == "clauderocks-dev-monthly-budget"
+    error_message = "Budget name should follow the naming convention: clauderocks-dev-monthly-budget"
   }
 }

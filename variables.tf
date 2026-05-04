@@ -10,7 +10,7 @@ variable "environment" {
 variable "project_name" {
   type        = string
   description = "Project name used in resource naming and tagging"
-  default     = "clauderooks"
+  default     = "clauderocks"
   validation {
     condition     = can(regex("^[a-z][a-z0-9-]{2,24}$", var.project_name))
     error_message = "Project name must be 3-25 lowercase alphanumeric characters or hyphens, starting with a letter."
@@ -26,13 +26,13 @@ variable "aws_region" {
 variable "owner" {
   type        = string
   description = "Owner tag value"
-  default     = "clauderooks-team"
+  default     = "clauderocks-team"
 }
 
 variable "bedrock_model_ids" {
   type        = list(string)
   description = "List of Bedrock model identifiers to enable"
-  default     = ["anthropic.claude-sonnet-4-20250514"]
+  default     = ["anthropic.claude-opus-4-7"]
   validation {
     condition     = length(var.bedrock_model_ids) > 0
     error_message = "At least one Bedrock model ID must be specified."

@@ -19,7 +19,7 @@ run "model_ids_list_acceptance" {
     region      = "us-east-1"
     model_ids   = ["anthropic.claude-sonnet-4-20250514"]
     tags = {
-      Project     = "clauderooks"
+      Project     = "clauderocks"
       Environment = "dev"
       ManagedBy   = "terraform"
       Owner       = "test"
@@ -45,7 +45,7 @@ run "region_defaults_to_us_east_1" {
     environment = "dev"
     model_ids   = ["anthropic.claude-sonnet-4-20250514"]
     tags = {
-      Project     = "clauderooks"
+      Project     = "clauderocks"
       Environment = "dev"
       ManagedBy   = "terraform"
       Owner       = "test"
@@ -72,7 +72,7 @@ run "cloudwatch_log_group_naming" {
     region      = "us-east-1"
     model_ids   = ["anthropic.claude-sonnet-4-20250514"]
     tags = {
-      Project     = "clauderooks"
+      Project     = "clauderocks"
       Environment = "dev"
       ManagedBy   = "terraform"
       Owner       = "test"
@@ -80,7 +80,7 @@ run "cloudwatch_log_group_naming" {
   }
 
   assert {
-    condition     = aws_cloudwatch_log_group.bedrock_invocation.name == "/aws/bedrock/clauderooks-dev/invocation-logs"
+    condition     = aws_cloudwatch_log_group.bedrock_invocation.name == "/aws/bedrock/clauderocks-dev/invocation-logs"
     error_message = "CloudWatch log group name should follow /aws/bedrock/{name_prefix}/invocation-logs pattern"
   }
 
@@ -104,7 +104,7 @@ run "invocation_logging_configuration" {
     region      = "us-east-1"
     model_ids   = ["anthropic.claude-sonnet-4-20250514"]
     tags = {
-      Project     = "clauderooks"
+      Project     = "clauderocks"
       Environment = "dev"
       ManagedBy   = "terraform"
       Owner       = "test"
@@ -117,7 +117,7 @@ run "invocation_logging_configuration" {
   }
 
   assert {
-    condition     = aws_bedrock_model_invocation_logging_configuration.this.logging_config[0].cloudwatch_config[0].log_group_name == "/aws/bedrock/clauderooks-dev/invocation-logs"
+    condition     = aws_bedrock_model_invocation_logging_configuration.this.logging_config[0].cloudwatch_config[0].log_group_name == "/aws/bedrock/clauderocks-dev/invocation-logs"
     error_message = "Invocation logging should reference the correct CloudWatch log group"
   }
 }

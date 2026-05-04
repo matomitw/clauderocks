@@ -40,9 +40,9 @@
 #
 #   Environment | S3 Bucket                      | DynamoDB Table
 #   ----------- | ------------------------------ | ----------------------------
-#   dev         | clauderooks-tfstate-dev         | clauderooks-tflock-dev
-#   staging     | clauderooks-tfstate-staging     | clauderooks-tflock-staging
-#   prod        | clauderooks-tfstate-prod        | clauderooks-tflock-prod
+#   dev         | clauderocks-tfstate-dev         | clauderocks-tflock-dev
+#   staging     | clauderocks-tfstate-staging     | clauderocks-tflock-staging
+#   prod        | clauderocks-tfstate-prod        | clauderocks-tflock-prod
 #
 # The state key is always "terraform.tfstate" and the region defaults to
 # us-east-1 to match the provider configuration.
@@ -54,10 +54,19 @@
 #
 # terraform {
 #   backend "s3" {
-#     bucket         = "clauderooks-tfstate-{environment}"
+#     bucket         = "clauderocks-tfstate-{environment}"
 #     key            = "terraform.tfstate"
 #     region         = "us-east-1"
-#     dynamodb_table = "clauderooks-tflock-{environment}"
 #     encrypt        = true
+#   }
+# }
+
+
+# terraform {
+#   backend "s3" {
+#     bucket  = "clauderocks-tfstate-dev"
+#     key     = "terraform.tfstate"
+#     region  = "us-east-1"
+#     encrypt = true
 #   }
 # }

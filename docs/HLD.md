@@ -1,8 +1,8 @@
-# High-Level Design Document — clauderooks
+# High-Level Design Document — clauderocks
 
 ## 1. Introduction
 
-**clauderooks** is a Terraform infrastructure-as-code project that provisions and manages all AWS resources required to run [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) backed by Amazon Bedrock. The project covers IAM identity management, Bedrock model access, optional private networking via VPC endpoints, cost management, observability, and multi-environment support (dev, staging, prod).
+**clauderocks** is a Terraform infrastructure-as-code project that provisions and manages all AWS resources required to run [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) backed by Amazon Bedrock. The project covers IAM identity management, Bedrock model access, optional private networking via VPC endpoints, cost management, observability, and multi-environment support (dev, staging, prod).
 
 This document describes the overall architecture, module responsibilities, security model, multi-environment strategy, CI/CD pipeline, and key design decisions.
 
@@ -168,9 +168,9 @@ graph LR
     end
 
     subgraph "S3 State Backend"
-        DEV_STATE["clauderooks-tfstate-dev/<br/>terraform.tfstate"]
-        STG_STATE["clauderooks-tfstate-staging/<br/>terraform.tfstate"]
-        PRD_STATE["clauderooks-tfstate-prod/<br/>terraform.tfstate"]
+        DEV_STATE["clauderocks-tfstate-dev/<br/>terraform.tfstate"]
+        STG_STATE["clauderocks-tfstate-staging/<br/>terraform.tfstate"]
+        PRD_STATE["clauderocks-tfstate-prod/<br/>terraform.tfstate"]
     end
 
     ROOT -->|"-var-file=dev.tfvars"| DEV_STATE
@@ -196,7 +196,7 @@ graph LR
 
 ### 4.3 Resource Naming Convention
 
-All resources are prefixed with `{project_name}-{environment}` (e.g., `clauderooks-dev`, `clauderooks-prod`) to prevent naming collisions across environments. This prefix is computed in `locals.tf`:
+All resources are prefixed with `{project_name}-{environment}` (e.g., `clauderocks-dev`, `clauderocks-prod`) to prevent naming collisions across environments. This prefix is computed in `locals.tf`:
 
 ```hcl
 locals {
@@ -210,10 +210,10 @@ Every resource carries a consistent tag set propagated from the root module:
 
 | Tag | Value | Purpose |
 |---|---|---|
-| `Project` | `clauderooks` | Cost allocation and identification |
+| `Project` | `clauderocks` | Cost allocation and identification |
 | `Environment` | `dev` / `staging` / `prod` | Environment identification |
 | `ManagedBy` | `terraform` | Distinguishes IaC-managed resources |
-| `Owner` | `clauderooks-team` (configurable) | Ownership tracking |
+| `Owner` | `clauderocks-team` (configurable) | Ownership tracking |
 
 Tags are defined in `locals.tf` and passed to every module via the `tags` variable. Modules may merge additional resource-specific tags as needed.
 
@@ -359,7 +359,7 @@ flowchart TD
 ## 8. Directory Structure
 
 ```
-clauderooks/
+clauderocks/
 ├── main.tf                          # Root module — orchestrates all child modules
 ├── variables.tf                     # Root input variables with validation
 ├── outputs.tf                       # Root outputs from all modules

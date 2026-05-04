@@ -1,123 +1,123 @@
-name: Terraform Apply
+# name: Terraform Apply
 
-on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'clauderooks/**'
-      - '.github/workflows/terraform-apply.yml'
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Target environment for terraform apply'
-        required: true
-        default: 'dev'
-        type: choice
-        options:
-          - dev
-          - staging
-          - prod
+# on:
+#   push:
+#     branches:
+#       - main
+#     paths:
+#       - 'clauderocks/**'
+#       - '.github/workflows/terraform-apply.yml'
+#   workflow_dispatch:
+#     inputs:
+#       environment:
+#         description: 'Target environment for terraform apply'
+#         required: true
+#         default: 'dev'
+#         type: choice
+#         options:
+#           - dev
+#           - staging
+#           - prod
 
-permissions:
-  id-token: write
-  contents: read
+# permissions:
+#   id-token: write
+#   contents: read
 
-env:
-  TF_VERSION: '1.6.0'
-  WORKING_DIR: 'clauderooks'
-  AWS_REGION: 'us-east-1'
+# env:
+#   TF_VERSION: '1.6.0'
+#   WORKING_DIR: 'clauderocks'
+#   AWS_REGION: 'us-east-1'
 
-jobs:
-  # --------------------------------------------------
-  # 1. Plan — generate and review the execution plan
-  # --------------------------------------------------
-  plan:
-    name: Terraform Plan
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ${{ env.WORKING_DIR }}
-    outputs:
-      environment: ${{ steps.env.outputs.environment }}
+# jobs:
+#   # --------------------------------------------------
+#   # 1. Plan — generate and review the execution plan
+#   # --------------------------------------------------
+#   plan:
+#     name: Terraform Plan
+#     runs-on: ubuntu-latest
+#     defaults:
+#       run:
+#         working-directory: ${{ env.WORKING_DIR }}
+#     outputs:
+#       environment: ${{ steps.env.outputs.environment }}
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
 
-      - name: Set environment
-        id: env
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "environment=${{ github.event.inputs.environment }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "environment=dev" >> "$GITHUB_OUTPUT"
-          fi
+#       - name: Set environment
+#         id: env
+#         run: |
+#           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+#             echo "environment=${{ github.event.inputs.environment }}" >> "$GITHUB_OUTPUT"
+#           else
+#             echo "environment=dev" >> "$GITHUB_OUTPUT"
+#           fi
 
-      - name: Configure AWS credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          role-session-name: terraform-plan-${{ steps.env.outputs.environment }}
-          aws-region: ${{ env.AWS_REGION }}
+#       - name: Configure AWS credentials (OIDC)
+#         uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+#           role-session-name: terraform-plan-${{ steps.env.outputs.environment }}
+#           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{ env.TF_VERSION }}
+#       - name: Setup Terraform
+#         uses: hashicorp/setup-terraform@v3
+#         with:
+#           terraform_version: ${{ env.TF_VERSION }}
 
-      - name: Terraform Init
-        run: terraform init
+#       - name: Terraform Init
+#         run: terraform init
 
-      - name: Terraform Plan
-        run: |
-          terraform plan \
-            -var-file=envs/${{ steps.env.outputs.environment }}.tfvars \
-            -out=tfplan \
-            -no-color
+#       - name: Terraform Plan
+#         run: |
+#           terraform plan \
+#             -var-file=envs/${{ steps.env.outputs.environment }}.tfvars \
+#             -out=tfplan \
+#             -no-color
 
-      - name: Upload plan artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: tfplan-${{ steps.env.outputs.environment }}
-          path: ${{ env.WORKING_DIR }}/tfplan
-          retention-days: 5
+#       - name: Upload plan artifact
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: tfplan-${{ steps.env.outputs.environment }}
+#           path: ${{ env.WORKING_DIR }}/tfplan
+#           retention-days: 5
 
-  # --------------------------------------------------
-  # 2. Apply — apply the plan to the target environment
-  #    GitHub environment protection rules handle the
-  #    manual approval gate for prod.
-  # --------------------------------------------------
-  apply:
-    name: Terraform Apply
-    needs: plan
-    runs-on: ubuntu-latest
-    environment: ${{ needs.plan.outputs.environment }}
-    defaults:
-      run:
-        working-directory: ${{ env.WORKING_DIR }}
+#   # --------------------------------------------------
+#   # 2. Apply — apply the plan to the target environment
+#   #    GitHub environment protection rules handle the
+#   #    manual approval gate for prod.
+#   # --------------------------------------------------
+#   apply:
+#     name: Terraform Apply
+#     needs: plan
+#     runs-on: ubuntu-latest
+#     environment: ${{ needs.plan.outputs.environment }}
+#     defaults:
+#       run:
+#         working-directory: ${{ env.WORKING_DIR }}
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
 
-      - name: Configure AWS credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          role-session-name: terraform-apply-${{ needs.plan.outputs.environment }}
-          aws-region: ${{ env.AWS_REGION }}
+#       - name: Configure AWS credentials (OIDC)
+#         uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+#           role-session-name: terraform-apply-${{ needs.plan.outputs.environment }}
+#           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{ env.TF_VERSION }}
+#       - name: Setup Terraform
+#         uses: hashicorp/setup-terraform@v3
+#         with:
+#           terraform_version: ${{ env.TF_VERSION }}
 
-      - name: Terraform Init
-        run: terraform init
+#       - name: Terraform Init
+#         run: terraform init
 
-      - name: Terraform Apply
-        run: |
-          terraform apply \
-            -var-file=envs/${{ needs.plan.outputs.environment }}.tfvars \
-            -auto-approve
+#       - name: Terraform Apply
+#         run: |
+#           terraform apply \
+#             -var-file=envs/${{ needs.plan.outputs.environment }}.tfvars \
+#             -auto-approve
