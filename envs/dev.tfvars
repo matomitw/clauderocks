@@ -5,7 +5,7 @@ max_session_duration = 3600
 secret_rotation_days = 90
 alert_emails         = ["Matomiezekiel6@gmail.com"]
 
-bedrock_model_ids    = ["us.anthropic.claude-opus-4-7"]
+bedrock_model_ids = ["us.anthropic.claude-opus-4-7"]
 # Available inference profile IDs (us-east-1):
 #   "us.anthropic.claude-opus-4-7"                  - Claude Opus 4.7
 #   "us.anthropic.claude-opus-4-6-v1"               - Claude Opus 4.6
