@@ -2,7 +2,6 @@ environment          = "staging"
 monthly_budget_limit = 200
 enable_vpc_endpoints = true
 max_session_duration = 7200
-secret_rotation_days = 60
 alert_emails         = ["staging-alerts@example.com"]
 
 bedrock_model_ids = ["us.anthropic.claude-opus-4-7", "us.anthropic.claude-sonnet-4-20250514-v1:0", "us.anthropic.claude-3-5-haiku-20241022-v1:0"]

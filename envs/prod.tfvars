@@ -2,7 +2,6 @@ environment               = "prod"
 monthly_budget_limit      = 1000
 enable_vpc_endpoints      = true
 max_session_duration      = 3600
-secret_rotation_days      = 30
 alert_emails              = ["prod-alerts@example.com", "oncall@example.com"]
 cloudtrail_retention_days = 365
 alarm_error_threshold     = 3

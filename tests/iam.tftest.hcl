@@ -16,7 +16,6 @@ run "iam_user_naming_convention" {
     environment          = "dev"
     project_name         = "clauderocks"
     max_session_duration = 3600
-    secret_rotation_days = 90
     tags = {
       Project     = "clauderocks"
       Environment = "dev"
@@ -44,7 +43,6 @@ run "iam_role_trust_policy" {
     environment          = "dev"
     project_name         = "clauderocks"
     max_session_duration = 3600
-    secret_rotation_days = 90
     tags = {
       Project     = "clauderocks"
       Environment = "dev"
@@ -77,7 +75,6 @@ run "bedrock_policy_attached_to_role" {
     environment          = "dev"
     project_name         = "clauderocks"
     max_session_duration = 3600
-    secret_rotation_days = 90
     tags = {
       Project     = "clauderocks"
       Environment = "dev"
@@ -105,7 +102,6 @@ run "user_policy_assume_role_only" {
     environment          = "dev"
     project_name         = "clauderocks"
     max_session_duration = 3600
-    secret_rotation_days = 90
     tags = {
       Project     = "clauderocks"
       Environment = "dev"
@@ -138,7 +134,6 @@ run "secrets_manager_secret_created" {
     environment          = "dev"
     project_name         = "clauderocks"
     max_session_duration = 3600
-    secret_rotation_days = 90
     tags = {
       Project     = "clauderocks"
       Environment = "dev"
@@ -168,7 +163,6 @@ run "secret_arn_output_is_sensitive" {
     environment          = "dev"
     project_name         = "clauderocks"
     max_session_duration = 3600
-    secret_rotation_days = 90
     tags = {
       Project     = "clauderocks"
       Environment = "dev"

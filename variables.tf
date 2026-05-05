@@ -83,16 +83,6 @@ variable "max_session_duration" {
   }
 }
 
-variable "secret_rotation_days" {
-  type        = number
-  description = "Secrets Manager rotation interval in days"
-  default     = 90
-  validation {
-    condition     = var.secret_rotation_days >= 1 && var.secret_rotation_days <= 365
-    error_message = "Rotation interval must be between 1 and 365 days."
-  }
-}
-
 variable "cloudtrail_retention_days" {
   type        = number
   description = "CloudTrail log retention period in days"
