@@ -164,7 +164,7 @@ jobs:
       # 9. Send Slack notification (optional)
       # --------------------------------------------------
       - name: Send drift notification (Slack)
-        if: steps.plan.outputs.drift_detected == 'true' && secrets.SLACK_WEBHOOK_URL != ''
+        if: steps.plan.outputs.drift_detected == 'true' && env.SLACK_WEBHOOK_URL != ''
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
