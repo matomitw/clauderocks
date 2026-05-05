@@ -10,6 +10,7 @@ clauderocks creates a complete, production-ready setup: IAM users and roles with
 - [Installing Claude Code CLI](#installing-claude-code-cli)
 - [Deploying Infrastructure](#deploying-infrastructure)
 - [Activating Bedrock Model Access](#activating-bedrock-model-access)
+- [Setting Up GitHub Actions OIDC](#setting-up-github-actions-oidc)
 - [Configuring Claude Code with Bedrock](#configuring-claude-code-with-bedrock)
 - [Retrieving IAM Credentials from Secrets Manager](#retrieving-iam-credentials-from-secrets-manager)
 - [Assuming the IAM Role](#assuming-the-iam-role)
@@ -111,6 +112,72 @@ If you get a response from Claude, the marketplace subscription is active and yo
 >   --query "inferenceProfileSummaries[?contains(inferenceProfileId,'anthropic')].{id:inferenceProfileId,name:inferenceProfileName}" \
 >   --output table
 > ```
+
+## Setting Up GitHub Actions OIDC
+
+The CI/CD workflows use OpenID Connect (OIDC) to authenticate to AWS without static credentials. This is a one-time setup per AWS account + GitHub repo.
+
+### 1. Create the OIDC Identity Provider
+
+```bash
+aws iam create-open-id-connect-provider \
+  --url https://token.actions.githubusercontent.com \
+  --client-id-list sts.amazonaws.com \
+  --thumbprint-list 6938fd4d98bab03faadb97b34396831e3780aea1
+```
+
+### 2. Create an IAM Role for GitHub Actions
+
+Replace `<ACCOUNT_ID>`, `<GITHUB_USERNAME>`, and `<REPO_NAME>` with your values:
+
+```bash
+aws iam create-role \
+  --role-name github-actions-terraform \
+  --assume-role-policy-document '{
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Principal": {
+          "Federated": "arn:aws:iam::<ACCOUNT_ID>:oidc-provider/token.actions.githubusercontent.com"
+        },
+        "Action": "sts:AssumeRoleWithWebIdentity",
+        "Condition": {
+          "StringEquals": {
+            "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+          },
+          "StringLike": {
+            "token.actions.githubusercontent.com:sub": "repo:<GITHUB_USERNAME>/<REPO_NAME>:*"
+          }
+        }
+      }
+    ]
+  }'
+```
+
+> **Tip:** To restrict to only the `main` branch, change the `sub` condition to:
+> `"repo:<GITHUB_USERNAME>/<REPO_NAME>:ref:refs/heads/main"`
+
+### 3. Attach Permissions to the Role
+
+```bash
+aws iam attach-role-policy \
+  --role-name github-actions-terraform \
+  --policy-arn arn:aws:iam::aws:policy/AdministratorAccess
+```
+
+> **Note:** For production, scope this down to only the permissions Terraform needs. `AdministratorAccess` is fine for getting started.
+
+### 4. Add the Role ARN as a GitHub Secret
+
+Go to your repo → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**:
+
+- **Name:** `AWS_ROLE_ARN`
+- **Value:** `arn:aws:iam::<ACCOUNT_ID>:role/github-actions-terraform`
+
+### 5. Test the Setup
+
+Trigger the PR validation workflow manually from the **Actions** tab (it has `workflow_dispatch` enabled) to verify OIDC authentication works.
 
 ## Configuring Claude Code with Bedrock
 
