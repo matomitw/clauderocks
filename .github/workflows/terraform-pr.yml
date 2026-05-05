@@ -1,251 +1,249 @@
-# name: Terraform PR Validation
+name: Terraform PR Validation
 
-# on:
-#   pull_request:
-#     branches:
-#       - main
-#     paths:
-#       - 'clauderocks/**'
-#       - '.github/workflows/terraform-pr.yml'
-#   workflow_dispatch:
-#     inputs:
-#       environment:
-#         description: 'Target environment for terraform plan'
-#         required: false
-#         default: 'dev'
-#         type: choice
-#         options:
-#           - dev
-#           - staging
-#           - prod
 
-# permissions:
-#   id-token: write
-#   contents: read
-#   pull-requests: write
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '*.tf'
+      - 'modules/**'
+      - 'envs/**'
+      - '.github/workflows/terraform-pr.yml'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment for terraform plan'
+        required: false
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
 
-# env:
-#   TF_VERSION: '1.6.0'
-#   TFLINT_VERSION: 'v0.50.0'
-#   WORKING_DIR: 'clauderocks'
-#   AWS_REGION: 'us-east-1'
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
 
-# jobs:
-#   terraform-pr:
-#     name: Terraform PR Validation
-#     runs-on: ubuntu-latest
-#     defaults:
-#       run:
-#         working-directory: ${{ env.WORKING_DIR }}
+env:
+  TF_VERSION: '1.6.0'
+  TFLINT_VERSION: 'v0.50.0'
+  AWS_REGION: 'us-east-1'
 
-#     steps:
-#       # --------------------------------------------------
-#       # 1. Checkout code
-#       # --------------------------------------------------
-#       - name: Checkout code
-#         uses: actions/checkout@v4
+jobs:
+  terraform-pr:
+    name: Terraform PR Validation
+    runs-on: ubuntu-latest
 
-#       # --------------------------------------------------
-#       # 2. Determine target environment
-#       # --------------------------------------------------
-#       - name: Set environment
-#         id: env
-#         run: |
-#           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-#             echo "environment=${{ github.event.inputs.environment }}" >> "$GITHUB_OUTPUT"
-#           else
-#             echo "environment=dev" >> "$GITHUB_OUTPUT"
-#           fi
+    steps:
+      # --------------------------------------------------
+      # 1. Checkout code
+      # --------------------------------------------------
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-#       # --------------------------------------------------
-#       # 3. Authenticate to AWS via OIDC (no static keys)
-#       # --------------------------------------------------
-#       - name: Configure AWS credentials (OIDC)
-#         uses: aws-actions/configure-aws-credentials@v4
-#         with:
-#           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-#           role-session-name: terraform-pr-${{ steps.env.outputs.environment }}
-#           aws-region: ${{ env.AWS_REGION }}
+      # --------------------------------------------------
+      # 2. Determine target environment
+      # --------------------------------------------------
+      - name: Set environment
+        id: env
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "environment=${{ github.event.inputs.environment }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "environment=dev" >> "$GITHUB_OUTPUT"
+          fi
 
-#       # --------------------------------------------------
-#       # 4. Setup Terraform
-#       # --------------------------------------------------
-#       - name: Setup Terraform
-#         uses: hashicorp/setup-terraform@v3
-#         with:
-#           terraform_version: ${{ env.TF_VERSION }}
-#           terraform_wrapper: true
+      # --------------------------------------------------
+      # 3. Authenticate to AWS via OIDC (no static keys)
+      # --------------------------------------------------
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: terraform-pr-${{ steps.env.outputs.environment }}
+          aws-region: ${{ env.AWS_REGION }}
 
-#       # --------------------------------------------------
-#       # 5. Setup tflint
-#       # --------------------------------------------------
-#       - name: Setup tflint
-#         uses: terraform-linters/setup-tflint@v4
-#         with:
-#           tflint_version: ${{ env.TFLINT_VERSION }}
+      # --------------------------------------------------
+      # 4. Setup Terraform
+      # --------------------------------------------------
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: true
 
-#       # --------------------------------------------------
-#       # 6. Terraform Format Check
-#       # --------------------------------------------------
-#       - name: Terraform Format Check
-#         id: fmt
-#         run: terraform fmt -check -recursive
-#         continue-on-error: true
+      # --------------------------------------------------
+      # 5. Setup tflint
+      # --------------------------------------------------
+      - name: Setup tflint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: ${{ env.TFLINT_VERSION }}
 
-#       # --------------------------------------------------
-#       # 7. Terraform Init (backend disabled for validation)
-#       # --------------------------------------------------
-#       - name: Terraform Init
-#         id: init
-#         run: terraform init -backend=false
+      # --------------------------------------------------
+      # 6. Terraform Format Check
+      # --------------------------------------------------
+      - name: Terraform Format Check
+        id: fmt
+        run: terraform fmt -check -recursive
+        continue-on-error: true
 
-#       # --------------------------------------------------
-#       # 8. tflint
-#       # --------------------------------------------------
-#       - name: Initialize tflint
-#         run: tflint --init
+      # --------------------------------------------------
+      # 7. Terraform Init (backend disabled for validation)
+      # --------------------------------------------------
+      - name: Terraform Init
+        id: init
+        run: terraform init -backend=false
 
-#       - name: Run tflint
-#         id: tflint
-#         run: tflint --recursive
-#         continue-on-error: true
+      # --------------------------------------------------
+      # 8. tflint
+      # --------------------------------------------------
+      - name: Initialize tflint
+        run: tflint --init
 
-#       # --------------------------------------------------
-#       # 9. Terraform Validate
-#       # --------------------------------------------------
-#       - name: Terraform Validate
-#         id: validate
-#         run: terraform validate -no-color
+      - name: Run tflint
+        id: tflint
+        run: tflint --recursive
+        continue-on-error: true
 
-#       # --------------------------------------------------
-#       # 10. Terraform Plan
-#       # --------------------------------------------------
-#       - name: Terraform Plan
-#         id: plan
-#         run: |
-#           terraform plan \
-#             -var-file=envs/${{ steps.env.outputs.environment }}.tfvars \
-#             -out=tfplan \
-#             -no-color \
-#             -detailed-exitcode 2>&1 | tee plan_output.txt
-#           echo "exitcode=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
-#         continue-on-error: true
+      # --------------------------------------------------
+      # 9. Terraform Validate
+      # --------------------------------------------------
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
 
-#       # --------------------------------------------------
-#       # 11. Detect drift from plan exit code
-#       # --------------------------------------------------
-#       - name: Check for drift
-#         id: drift
-#         run: |
-#           PLAN_EXIT="${{ steps.plan.outputs.exitcode }}"
-#           if [ "$PLAN_EXIT" = "2" ]; then
-#             echo "drift_detected=true" >> "$GITHUB_OUTPUT"
-#             echo "::warning::Drift detected — terraform plan shows changes for ${{ steps.env.outputs.environment }} environment"
-#           else
-#             echo "drift_detected=false" >> "$GITHUB_OUTPUT"
-#           fi
+      # --------------------------------------------------
+      # 10. Terraform Plan
+      # --------------------------------------------------
+      - name: Terraform Plan
+        id: plan
+        run: |
+          terraform plan \
+            -var-file=envs/${{ steps.env.outputs.environment }}.tfvars \
+            -out=tfplan \
+            -no-color \
+            -detailed-exitcode 2>&1 | tee plan_output.txt
+          echo "exitcode=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+        continue-on-error: true
 
-#       # --------------------------------------------------
-#       # 12. Post plan output as PR comment
-#       # --------------------------------------------------
-#       - name: Post PR Comment
-#         if: github.event_name == 'pull_request'
-#         uses: actions/github-script@v7
-#         with:
-#           github-token: ${{ secrets.GITHUB_TOKEN }}
-#           script: |
-#             const fs = require('fs');
-#             const env = '${{ steps.env.outputs.environment }}';
-#             const fmtOutcome = '${{ steps.fmt.outcome }}';
-#             const tflintOutcome = '${{ steps.tflint.outcome }}';
-#             const validateOutcome = '${{ steps.validate.outcome }}';
-#             const planOutcome = '${{ steps.plan.outcome }}';
-#             const driftDetected = '${{ steps.drift.outputs.drift_detected }}' === 'true';
+      # --------------------------------------------------
+      # 11. Detect drift from plan exit code
+      # --------------------------------------------------
+      - name: Check for drift
+        id: drift
+        run: |
+          PLAN_EXIT="${{ steps.plan.outputs.exitcode }}"
+          if [ "$PLAN_EXIT" = "2" ]; then
+            echo "drift_detected=true" >> "$GITHUB_OUTPUT"
+            echo "::warning::Drift detected — terraform plan shows changes for ${{ steps.env.outputs.environment }} environment"
+          else
+            echo "drift_detected=false" >> "$GITHUB_OUTPUT"
+          fi
 
-#             // Read plan output
-#             let planOutput = '';
-#             try {
-#               planOutput = fs.readFileSync('${{ env.WORKING_DIR }}/plan_output.txt', 'utf8');
-#             } catch (e) {
-#               planOutput = 'Plan output not available.';
-#             }
+      # --------------------------------------------------
+      # 12. Post plan output as PR comment
+      # --------------------------------------------------
+      - name: Post PR Comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const env = '${{ steps.env.outputs.environment }}';
+            const fmtOutcome = '${{ steps.fmt.outcome }}';
+            const tflintOutcome = '${{ steps.tflint.outcome }}';
+            const validateOutcome = '${{ steps.validate.outcome }}';
+            const planOutcome = '${{ steps.plan.outcome }}';
+            const driftDetected = '${{ steps.drift.outputs.drift_detected }}' === 'true';
 
-#             // Truncate plan output if too long for a PR comment (max ~65536 chars)
-#             const maxLen = 60000;
-#             if (planOutput.length > maxLen) {
-#               planOutput = planOutput.substring(0, maxLen) + '\n\n... (truncated — see workflow logs for full output)';
-#             }
+            let planOutput = '';
+            try {
+              planOutput = fs.readFileSync('plan_output.txt', 'utf8');
+            } catch (e) {
+              planOutput = 'Plan output not available.';
+            }
 
-#             const statusIcon = (outcome) => outcome === 'success' ? '✅' : '❌';
-#             const driftWarning = driftDetected
-#               ? '\n\n> ⚠️ **Drift Detected**: `terraform plan` shows changes against the current state for the **' + env + '** environment. Please review the plan output carefully.\n'
-#               : '';
+            // Truncate plan output if too long for a PR comment (max ~65536 chars)
+            const maxLen = 60000;
+            if (planOutput.length > maxLen) {
+              planOutput = planOutput.substring(0, maxLen) + '\n\n... (truncated — see workflow logs for full output)';
+            }
 
-#             const body = `### Terraform PR Validation — \`${env}\` environment
-#             ${driftWarning}
-#             | Step | Status |
-#             |------|--------|
-#             | 🖌 Format (\`terraform fmt -check\`) | ${statusIcon(fmtOutcome)} |
-#             | 🔍 Lint (\`tflint\`) | ${statusIcon(tflintOutcome)} |
-#             | ✔️ Validate (\`terraform validate\`) | ${statusIcon(validateOutcome)} |
-#             | 📋 Plan (\`terraform plan\`) | ${statusIcon(planOutcome)} |
+            const statusIcon = (outcome) => outcome === 'success' ? '✅' : '❌';
+            const driftWarning = driftDetected
+              ? '\n\n> ⚠️ **Drift Detected**: `terraform plan` shows changes against the current state for the **' + env + '** environment. Please review the plan output carefully.\n'
+              : '';
 
-#             <details><summary>Show Plan Output</summary>
+            const body = `### Terraform PR Validation — \`${env}\` environment
+            ${driftWarning}
+            | Step | Status |
+            |------|--------|
+            | 🖌 Format (\`terraform fmt -check\`) | ${statusIcon(fmtOutcome)} |
+            | 🔍 Lint (\`tflint\`) | ${statusIcon(tflintOutcome)} |
+            | ✔️ Validate (\`terraform validate\`) | ${statusIcon(validateOutcome)} |
+            | 📋 Plan (\`terraform plan\`) | ${statusIcon(planOutcome)} |
 
-#             \`\`\`terraform
-#             ${planOutput}
-#             \`\`\`
+            <details><summary>Show Plan Output</summary>
 
-#             </details>
+            \`\`\`terraform
+            ${planOutput}
+            \`\`\`
 
-#             *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Workflow: \`${{ github.workflow }}\`*`;
+            </details>
 
-#             // Find and update existing comment or create new one
-#             const { data: comments } = await github.rest.issues.listComments({
-#               owner: context.repo.owner,
-#               repo: context.repo.repo,
-#               issue_number: context.issue.number,
-#             });
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Workflow: \`${{ github.workflow }}\`*`;
 
-#             const botComment = comments.find(comment =>
-#               comment.user.type === 'Bot' &&
-#               comment.body.includes('Terraform PR Validation')
-#             );
+            // Find and update existing comment or create new one
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
 
-#             if (botComment) {
-#               await github.rest.issues.updateComment({
-#                 owner: context.repo.owner,
-#                 repo: context.repo.repo,
-#                 comment_id: botComment.id,
-#                 body: body,
-#               });
-#             } else {
-#               await github.rest.issues.createComment({
-#                 owner: context.repo.owner,
-#                 repo: context.repo.repo,
-#                 issue_number: context.issue.number,
-#                 body: body,
-#               });
-#             }
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('Terraform PR Validation')
+            );
 
-#       # --------------------------------------------------
-#       # 13. Fail the workflow if any check failed
-#       # --------------------------------------------------
-#       - name: Check results
-#         run: |
-#           if [ "${{ steps.fmt.outcome }}" != "success" ]; then
-#             echo "::error::Terraform format check failed. Run 'terraform fmt -recursive' locally."
-#             exit 1
-#           fi
-#           if [ "${{ steps.tflint.outcome }}" != "success" ]; then
-#             echo "::error::tflint found issues. Review the lint output above."
-#             exit 1
-#           fi
-#           if [ "${{ steps.validate.outcome }}" != "success" ]; then
-#             echo "::error::Terraform validate failed."
-#             exit 1
-#           fi
-#           if [ "${{ steps.plan.outcome }}" != "success" ]; then
-#             echo "::error::Terraform plan failed."
-#             exit 1
-#           fi
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body,
+              });
+            }
+
+      # --------------------------------------------------
+      # 13. Fail the workflow if any check failed
+      # --------------------------------------------------
+      - name: Check results
+        run: |
+          if [ "${{ steps.fmt.outcome }}" != "success" ]; then
+            echo "::error::Terraform format check failed. Run 'terraform fmt -recursive' locally."
+            exit 1
+          fi
+          if [ "${{ steps.tflint.outcome }}" != "success" ]; then
+            echo "::error::tflint found issues. Review the lint output above."
+            exit 1
+          fi
+          if [ "${{ steps.validate.outcome }}" != "success" ]; then
+            echo "::error::Terraform validate failed."
+            exit 1
+          fi
+          if [ "${{ steps.plan.outcome }}" != "success" ]; then
+            echo "::error::Terraform plan failed."
+            exit 1
+          fi
