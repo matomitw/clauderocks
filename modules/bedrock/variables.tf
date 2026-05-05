@@ -7,12 +7,6 @@ variable "environment" {
   }
 }
 
-variable "region" {
-  type        = string
-  description = "AWS region for Bedrock"
-  default     = "us-east-1"
-}
-
 variable "model_ids" {
   type        = list(string)
   description = "List of Bedrock inference profile IDs to enable (e.g., us.anthropic.claude-sonnet-4-20250514-v1:0)"

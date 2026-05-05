@@ -5,6 +5,4 @@ locals {
     ManagedBy   = "terraform"
     Owner       = var.owner
   }
-
-  name_prefix = "${var.project_name}-${var.environment}"
 }

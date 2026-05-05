@@ -41,7 +41,6 @@ module "iam" {
   environment          = var.environment
   project_name         = var.project_name
   max_session_duration = var.max_session_duration
-  secret_rotation_days = var.secret_rotation_days
   tags                 = local.common_tags
 }
 
@@ -55,7 +54,6 @@ module "bedrock" {
   source = "./modules/bedrock"
 
   environment = var.environment
-  region      = var.aws_region
   model_ids   = var.bedrock_model_ids
   tags        = local.common_tags
 }

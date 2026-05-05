@@ -12,8 +12,6 @@ locals {
 
 data "aws_caller_identity" "current" {}
 
-data "aws_partition" "current" {}
-
 # --- CloudWatch Log Group for Bedrock Invocation Logging ---
 
 resource "aws_cloudwatch_log_group" "bedrock_invocation" {

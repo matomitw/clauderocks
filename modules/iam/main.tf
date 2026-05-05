@@ -2,12 +2,6 @@
 # IAM Module - User, Role, Policy, Access Keys, Secrets Manager
 ################################################################################
 
-# --- Data Sources ---
-
-data "aws_caller_identity" "current" {}
-
-data "aws_partition" "current" {}
-
 # --- Local Values ---
 
 locals {
